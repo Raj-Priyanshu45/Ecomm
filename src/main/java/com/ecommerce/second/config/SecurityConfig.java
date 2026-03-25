@@ -34,6 +34,7 @@ public class SecurityConfig {
         .build();
     }
 
+    @SuppressWarnings("unchecked")
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter(){
 

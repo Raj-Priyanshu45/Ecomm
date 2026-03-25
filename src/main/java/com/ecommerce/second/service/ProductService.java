@@ -1,15 +1,11 @@
 package com.ecommerce.second.service;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,19 +34,16 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
-@Transactional
+
 @RequiredArgsConstructor
 public class ProductService {
-
-    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; 
-    private static final Set<String> ALLOWED_EXTENSIONS = Set.of("png", "jpg", "jpeg", "webp");
-    private static final Path UPLOAD_PATH = Paths.get("uploads");
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final ProductRepo productRepo;
     private final UserRepo userRepo;
     private final TagRepo tagRepo;
     private final ProductImagesRepo imageRepo;
+    private final FileStorageService fileService;
 
     public User getCurrentUser(Authentication authentication) {
         return userRepo.findByKeyCloakId(authentication.getName())
@@ -86,6 +79,7 @@ public class ProductService {
     }
 
 
+    @Transactional
     public AddProduct saveProduct(CreateProducts request, Authentication authentication) {
         User user = getCurrentUser(authentication);
         Set<Tags> tags = resolveTags(request.getTags());
@@ -111,6 +105,7 @@ public class ProductService {
                 .tags(request.getTags())
                 .build();
     }
+
 
     public AddProduct modifyProduct(int id, ModifyProducts request, Authentication authentication) {
         User user = getCurrentUser(authentication);
@@ -139,6 +134,7 @@ public class ProductService {
                 .build();
     }
 
+    @Transactional
     public String deleteProduct(int id, Authentication authentication) {
         User user = getCurrentUser(authentication);
         Products product = getProducts(id);
@@ -156,70 +152,51 @@ public class ProductService {
         return product.getName();
     }
 
-    private String saveFileToDisk(MultipartFile file) throws IOException {
-        if (file.getSize() > MAX_FILE_SIZE) {
-            throw new IllegalArgumentException("File too large (max 5 MB)");
-        }
 
-        String originalName = file.getOriginalFilename();
-        if (originalName == null || !originalName.contains(".")) {
-            throw new IllegalArgumentException("Invalid file name");
-        }
-
-        String contentType = file.getContentType();
-        if (contentType == null || !contentType.startsWith("image/")) {
-            throw new IllegalArgumentException("File must be an image");
-        }
-
-        int dotIndex = originalName.lastIndexOf('.');
-        String extension  = originalName.substring(dotIndex + 1).toLowerCase();
-        String dotExt     = originalName.substring(dotIndex);
-
-        if (!ALLOWED_EXTENSIONS.contains(extension)) {
-            throw new IllegalArgumentException("Invalid image format. Allowed: png, jpg, jpeg, webp");
-        }
-
-        if (!Files.exists(UPLOAD_PATH)) {
-            Files.createDirectories(UPLOAD_PATH);
-        }
-
-        String fileName = UUID.randomUUID() + dotExt;
-        Files.copy(file.getInputStream(), UPLOAD_PATH.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
-
-        return "/uploads/" + fileName;
-    }
-
-    private void deleteFileFromDisk(String imageUrl) throws IOException {
-        Path path = UPLOAD_PATH.resolve(imageUrl.replace("/uploads/", ""));
-        Files.deleteIfExists(path);
-    }
+   
 
     public List<String> uploadImages(int productId, int primaryImageIndex,
-            MultipartFile[] files, Authentication authentication) throws IOException {
+            MultipartFile[] files, Authentication authentication) {
 
         Products product = getProducts(productId);
         User user = getCurrentUser(authentication);
 
         assertOwnerOrAdmin(authentication, product, user);
 
+        List<CompletableFuture<String>> futures = new ArrayList<>();
+
+        // Step 1: start all async uploads
+        for (MultipartFile file : files) {
+            try {
+                futures.add(fileService.saveFileToDisk(file));
+            } catch (IOException e) {
+                throw new RuntimeException("File upload failed", e);
+            }
+        }
+
+        // Step 2: wait for all to complete
+        List<String> urls = new ArrayList<>();
+        for (CompletableFuture<String> future : futures) {
+            urls.add(future.join());
+        }
+
+        // Step 3: save to DB
         boolean alreadyHasPrimary = imageRepo.existsByProductIdAndPrimaryImageTrue(productId);
         List<String> savedUrls = new ArrayList<>();
 
-        for (int i = 0; i < files.length; i++) {
-            String imageUrl = saveFileToDisk(files[i]);
+        for (int i = 0; i < urls.size(); i++) {
             boolean isPrimary = !alreadyHasPrimary && (primaryImageIndex == i);
 
             imageRepo.save(ProductImages.builder()
-                    .imageUrl(imageUrl)
+                    .imageUrl(urls.get(i))
                     .primaryImage(isPrimary)
                     .product(product)
                     .build());
 
-            savedUrls.add(imageUrl);
+            savedUrls.add(urls.get(i));
         }
 
-        logger.info("Uploaded {} image(s) for product id={}", files.length, productId);
-        return savedUrls;
+return savedUrls;
     }
 
     
@@ -236,8 +213,10 @@ public class ProductService {
             throw new IllegalArgumentException("Image does not belong to this product");
         }
 
-        deleteFileFromDisk(image.getImageUrl());
-        String newUrl = saveFileToDisk(newFile);
+        fileService.deleteFileFromDisk(image.getImageUrl());
+        CompletableFuture<String> newUrlFuture = fileService.saveFileToDisk(newFile);
+
+        String newUrl = newUrlFuture.join();
 
         image.setImageUrl(newUrl);
         imageRepo.save(image);
@@ -258,7 +237,7 @@ public class ProductService {
             throw new ImageNotFoundException("Image does not belong to this product");
         }
 
-        deleteFileFromDisk(image.getImageUrl());
+        fileService.deleteFileFromDisk(image.getImageUrl()).join();
         imageRepo.delete(image);
 
         logger.info("Image id={} deleted from product id={}", imageId, productId);
@@ -276,7 +255,7 @@ public class ProductService {
         }
 
         for (ProductImages img : images) {
-            deleteFileFromDisk(img.getImageUrl());
+            fileService.deleteFileFromDisk(img.getImageUrl()).join();
         }
 
         imageRepo.deleteByProductId(productId);
@@ -308,6 +287,7 @@ public class ProductService {
         return new ChangeImageGETResponse(urls, imageList.size(), primaryUrl);
     }
 
+    @Transactional
     public void updatePrimaryImage(int productId, int oldPrimaryImageId, int newPrimaryImageId,
             Authentication authentication) {
 

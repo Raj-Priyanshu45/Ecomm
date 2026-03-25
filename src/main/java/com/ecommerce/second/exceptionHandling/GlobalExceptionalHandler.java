@@ -42,10 +42,10 @@ public class GlobalExceptionalHandler extends ResponseEntityExceptionHandler{
 
     @Override
     protected  ResponseEntity<Object> handleMethodArgumentNotValid(
-        MethodArgumentNotValidException ex ,
-        HttpHeaders headers,
-        HttpStatusCode status,
-        WebRequest request){
+        @SuppressWarnings("null") MethodArgumentNotValidException ex ,
+        @SuppressWarnings("null") HttpHeaders headers,
+        @SuppressWarnings("null") HttpStatusCode status,
+        @SuppressWarnings("null") WebRequest request){
             
             List<String> message = ex.getBindingResult()
                                 .getFieldErrors()
@@ -79,10 +79,10 @@ public class GlobalExceptionalHandler extends ResponseEntityExceptionHandler{
 
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(
-            HttpMessageNotReadableException ex,
-            HttpHeaders headers,
-            HttpStatusCode status,
-            WebRequest request) {
+            @SuppressWarnings("null") HttpMessageNotReadableException ex,
+            @SuppressWarnings("null") HttpHeaders headers,
+            @SuppressWarnings("null") HttpStatusCode status,
+            @SuppressWarnings("null") WebRequest request) {
 
 
         String message = ex.getMostSpecificCause().getMessage();

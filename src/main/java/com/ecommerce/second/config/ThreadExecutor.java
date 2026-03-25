@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ThreadExecutor {
     
-    @Bean
+    @Bean("threadExecutor")
     public Executor threadExecutor(){
         return Executors.newVirtualThreadPerTaskExecutor();
     }
