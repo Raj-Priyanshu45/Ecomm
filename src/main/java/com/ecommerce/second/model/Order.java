@@ -44,8 +44,7 @@ import lombok.Setter;
     indexes = {
         @Index(name = "idx_order_user",       columnList = "keycloak_id"),
         @Index(name = "idx_order_status",     columnList = "status"),
-        @Index(name = "idx_order_warehouse",  columnList = "warehouse_id"),
-        @Index(name = "idx_order_tracking",   columnList = "tracking_id")
+        @Index(name = "idx_order_warehouse",  columnList = "warehouse_id")
     }
 )
 public class Order {

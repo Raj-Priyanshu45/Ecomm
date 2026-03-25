@@ -17,6 +17,9 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity
 
 public class SecurityConfig {
+
+    private final String[] freeUrl = {"/api/browse/**",       
+                    "/uploads/**"  };
     
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
@@ -24,7 +27,8 @@ public class SecurityConfig {
         return http
         .csrf(csrf -> csrf.disable())
         .authorizeHttpRequests(auth ->
-            auth.anyRequest().authenticated()
+            auth.requestMatchers(freeUrl).permitAll()
+            .anyRequest().authenticated()
         )
         .oauth2ResourceServer(oauth -> oauth
             .jwt(jwt -> jwt

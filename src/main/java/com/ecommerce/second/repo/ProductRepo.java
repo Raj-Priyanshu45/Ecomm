@@ -9,12 +9,12 @@ import org.springframework.stereotype.Repository;
 
 import com.ecommerce.second.model.Products;
 
-
 @Repository
-public interface ProductRepo extends JpaRepository<Products, Integer>{
-    
+public interface ProductRepo extends JpaRepository<Products, Integer> {
+
     Optional<Products> findByIdAndSeller_Id(int id, int sellerId);
 
-    
     Page<Products> findByTags_Slug(String slug, Pageable pageable);
+
+    Page<Products> findByNameContainingIgnoreCase(String q, Pageable pageable);
 }
