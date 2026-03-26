@@ -18,12 +18,11 @@
           <a routerLink="/cart" routerLinkActive="text-indigo-600"
              class="relative hover:text-indigo-600 transition-colors">
             Cart
-            @if ((cartService.cartCount$ | async) ?? 0; as count) {
-              @if (count > 0) {
-                <span class="absolute -top-2 -right-3 bg-indigo-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                  {{ count }}
-                </span>
-              }
+            @let cartCount = (cartService.cartCount$ | async) ?? 0;
+            @if ($any(cartCount) > 0) {
+              <span class="absolute -top-2 -right-3 bg-indigo-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                {{ cartCount }}
+              </span>
             }
           </a>
           <a routerLink="/my-orders" routerLinkActive="text-indigo-600"

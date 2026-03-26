@@ -1,17 +1,16 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { OidcSecurityService } from 'angular-auth-oidc-client';
 import { ProductService } from '../../services/product.service';
-import { CartService } from '../../services/cart.service';
+import { CartService } from '../cart/cart.service';
 import { AllProductResponse, ApiResponse } from '../../models/models';
 import { ProductCardComponent } from '../../shared/components/product-card/product-card.component';
-import { NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterModule, FormsModule, ProductCardComponent, NgClass],
+  imports: [RouterModule, FormsModule, ProductCardComponent],
   templateUrl: './home.component.html',
 })
 export class HomeComponent implements OnInit {

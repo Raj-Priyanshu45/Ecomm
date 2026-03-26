@@ -1,13 +1,13 @@
 import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { CurrencyPipe, NgClass } from '@angular/common';
+import { DecimalPipe, NgClass } from '@angular/common';
 import { AllProductResponse } from '../../../models/models';
 import { StarRatingComponent } from '../star-rating/star-rating.component';
 
 @Component({
   selector: 'app-product-card',
   standalone: true,
-  imports: [CurrencyPipe, NgClass, StarRatingComponent],
+  imports: [DecimalPipe, NgClass, StarRatingComponent],
   template: `
     <div
       (click)="goToDetail()"
@@ -78,7 +78,7 @@ export class ProductCardComponent {
   @Output() addToCart = new EventEmitter<AllProductResponse>();
 
   private router = inject(Router);
-  imageBase = 'http://localhost:8080';  // adjust if your backend runs elsewhere
+  imageBase = 'http://localhost:8080';
 
   goToDetail(): void {
     this.router.navigate(['/products', this.product.id]);

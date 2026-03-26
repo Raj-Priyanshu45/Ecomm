@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { KeyValuePipe, NgClass } from '@angular/common';
 import { OidcSecurityService } from 'angular-auth-oidc-client';
 import { ProductService } from '../services/product.service';
-import { CartService } from '../services/cart.service';
+import { CartService } from '../features/cart/cart.service';
 import { ReviewService } from '../services/review.service';
 import { SingleProductResponse, ReviewResponse, CreateReviewRequest } from '../models/models';
 import { StarRatingComponent } from '../shared/components/star-rating/star-rating.component';

@@ -1,13 +1,13 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { OidcSecurityService } from 'angular-auth-oidc-client';
-import { CartService } from '../../services/cart.service';
-import { AsyncPipe, NgClass } from '@angular/common';
+import { CartService } from '../../../features/cart/cart.service';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [RouterModule, AsyncPipe, NgClass],
+  imports: [RouterModule, AsyncPipe],
   templateUrl: './header.component.html',
 })
 export class HeaderComponent implements OnInit {

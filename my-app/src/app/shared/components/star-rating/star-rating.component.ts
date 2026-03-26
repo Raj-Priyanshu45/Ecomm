@@ -1,10 +1,9 @@
 import { Component, Input } from '@angular/core';
-import { NgFor } from '@angular/common';
 
 @Component({
   selector: 'app-star-rating',
   standalone: true,
-  imports: [NgFor],
+  imports: [],
   template: `
     <div class="flex items-center gap-0.5">
       @for (star of stars; track $index) {

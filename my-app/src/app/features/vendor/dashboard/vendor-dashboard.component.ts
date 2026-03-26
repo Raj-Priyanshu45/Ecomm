@@ -8,62 +8,79 @@ import { DatePipe } from '@angular/common';
   standalone: true,
   imports: [RouterModule, DatePipe],
   template: `
-    <div class="max-w-4xl mx-auto px-4 py-8">
+    <div class="max-w-5xl mx-auto px-4 py-8">
       <h1 class="text-3xl font-black text-gray-900 mb-6">Vendor Dashboard</h1>
 
-      @if (loading) {
-        <div class="h-32 bg-gray-100 rounded-2xl animate-pulse"></div>
-      } @else if (!profile) {
-        <!-- Registration form -->
-        <div class="bg-white border border-gray-100 rounded-2xl p-6 space-y-4">
-          <h2 class="font-semibold text-gray-800">Register as Vendor</h2>
-          <p class="text-sm text-gray-500">Submit your vendor application to start selling.</p>
-          <a routerLink="/vendor/register"
-             class="inline-block px-6 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-colors">
-            Apply Now
-          </a>
-        </div>
-      } @else {
-        <!-- Profile card -->
+      @if (profile) {
         <div class="bg-white border border-gray-100 rounded-2xl p-6 mb-6">
-          <div class="flex items-center justify-between">
+          <h2 class="font-semibold text-gray-800 mb-4">My Profile</h2>
+          <div class="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <h2 class="font-bold text-lg text-gray-900">{{ profile.email }}</h2>
-              <p class="text-sm text-gray-500">{{ profile.city }}, {{ profile.state }}</p>
+              <p class="text-gray-500">Business Name</p>
+              <p class="font-medium text-gray-900">{{ profile.businessName }}</p>
             </div>
-            <span [class]="statusClass(profile.status)"
-                  class="text-sm px-3 py-1 rounded-full font-medium">
-              {{ profile.status }}
-            </span>
+            <div>
+              <p class="text-gray-500">Status</p>
+              <span [class]="statusClass(profile.status)"
+                    class="text-xs px-3 py-1 rounded-full font-medium">
+                {{ profile.status }}
+              </span>
+            </div>
+            <div>
+              <p class="text-gray-500">Email</p>
+              <p class="font-medium text-gray-900">{{ profile.email }}</p>
+            </div>
+            <div>
+              <p class="text-gray-500">City / State</p>
+              <p class="font-medium text-gray-900">{{ profile.city }}, {{ profile.state }}</p>
+            </div>
           </div>
           @if (profile.adminNote) {
-            <div class="mt-4 bg-gray-50 rounded-xl p-3 text-sm text-gray-600">
-              <span class="font-medium">Admin note:</span> {{ profile.adminNote }}
-            </div>
-          }
-          @if (profile.warehouseName) {
-            <p class="mt-3 text-sm text-indigo-600 font-medium">
-              📦 Assigned to: {{ profile.warehouseName }}
-            </p>
-          }
-        </div>
-
-        <!-- Notifications -->
-        <div class="bg-white border border-gray-100 rounded-2xl p-6">
-          <h3 class="font-semibold text-gray-800 mb-4">Recent Notifications</h3>
-          @if (notifications.length === 0) {
-            <p class="text-sm text-gray-400">No notifications yet.</p>
-          }
-          @for (n of notifications; track n.id) {
-            <div [class]="n.read ? 'opacity-60' : ''"
-                 class="border-b border-gray-50 py-3 last:border-0">
-              <p class="text-sm font-semibold text-gray-800">{{ n.title }}</p>
-              <p class="text-xs text-gray-500 mt-0.5">{{ n.message }}</p>
-              <p class="text-xs text-gray-400 mt-1">{{ n.createdAt | date:'short' }}</p>
+            <div class="mt-4 p-3 bg-orange-50 rounded-xl text-sm text-orange-700">
+              Admin note: {{ profile.adminNote }}
             </div>
           }
         </div>
       }
+
+      <div class="mb-6">
+        <h2 class="font-semibold text-gray-800 mb-3">Notifications</h2>
+        <div class="flex gap-2 mb-4">
+          <button (click)="loadNotifications(false)"
+                  class="px-4 py-2 bg-indigo-600 text-white text-sm rounded-xl hover:bg-indigo-700 transition-colors">
+            All
+          </button>
+          <button (click)="loadNotifications(true)"
+                  class="px-4 py-2 border border-gray-200 text-gray-600 text-sm rounded-xl hover:bg-gray-50 transition-colors">
+            Unread
+          </button>
+          <button (click)="markAllRead()"
+                  class="px-4 py-2 border border-gray-200 text-gray-600 text-sm rounded-xl hover:bg-gray-50 transition-colors">
+            Mark All Read
+          </button>
+        </div>
+
+        @if (notifications.length === 0) {
+          <p class="text-gray-400 text-sm text-center py-8">No notifications</p>
+        } @else {
+          <div class="space-y-3">
+            @for (n of notifications; track n.id) {
+              <div [class]="n.read ? 'border-gray-100' : 'border-indigo-200'"
+                   class="bg-white border rounded-2xl p-4">
+                <div class="flex justify-between items-start mb-1">
+                  <p class="font-semibold text-gray-900 text-sm">{{ n.title }}</p>
+                  <span [class]="n.read ? 'bg-gray-100 text-gray-500' : 'bg-indigo-100 text-indigo-700'"
+                        class="text-xs px-2 py-0.5 rounded-full">
+                    {{ n.read ? 'Read' : 'Unread' }}
+                  </span>
+                </div>
+                <p class="text-sm text-gray-600">{{ n.message }}</p>
+                <p class="text-xs text-gray-400 mt-1">{{ n.createdAt | date:'medium' }}</p>
+              </div>
+            }
+          </div>
+        }
+      </div>
     </div>
   `,
 })
@@ -73,23 +90,30 @@ export class VendorDashboardComponent implements OnInit {
 
   profile: any = null;
   notifications: any[] = [];
-  loading = true;
 
   ngOnInit(): void {
-    this.http.get(`${this.baseUrl}/api/vendor/me`).subscribe({
-      next: (p) => {
-        this.profile = p;
-        this.loading = false;
-        this.loadNotifications();
-      },
-      error: () => (this.loading = false),
+    this.loadProfile();
+    this.loadNotifications(false);
+  }
+
+  loadProfile(): void {
+    this.http.get<any>(`${this.baseUrl}/api/vendor/me`).subscribe({
+      next: (res) => (this.profile = res),
     });
   }
 
-  loadNotifications(): void {
+  loadNotifications(unreadOnly: boolean): void {
     this.http
-      .get<any>(`${this.baseUrl}/api/vendor/notifications?size=10`)
-      .subscribe({ next: (res) => (this.notifications = res.content ?? []) });
+      .get<any>(`${this.baseUrl}/api/vendor/notifications?unreadOnly=${unreadOnly}&page=0&size=20`)
+      .subscribe({
+        next: (res) => (this.notifications = res.content ?? []),
+      });
+  }
+
+  markAllRead(): void {
+    this.http.put(`${this.baseUrl}/api/vendor/notifications/read`, {}).subscribe({
+      next: () => this.loadNotifications(false),
+    });
   }
 
   statusClass(status: string): string {
@@ -97,7 +121,7 @@ export class VendorDashboardComponent implements OnInit {
       PENDING: 'bg-yellow-100 text-yellow-700',
       APPROVED: 'bg-green-100 text-green-700',
       REJECTED: 'bg-red-100 text-red-700',
-      SUSPENDED: 'bg-gray-100 text-gray-600',
+      SUSPENDED: 'bg-gray-100 text-gray-700',
     };
     return map[status] ?? 'bg-gray-100 text-gray-600';
   }

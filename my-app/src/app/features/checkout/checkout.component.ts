@@ -1,8 +1,8 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { CartService } from '../../services/cart.service';
+import { CartService } from '../cart/cart.service';
 import { PlaceOrderRequest } from '../../models/models';
 
 const INDIAN_STATES = [
@@ -14,6 +14,12 @@ const INDIAN_STATES = [
   'LADAKH','CHANDIGARH','PUDUCHERRY','ANDAMAN_AND_NICOBAR',
   'DADRA_AND_NAGAR_HAVELI_AND_DAMAN_AND_DIU','LAKSHADWEEP'
 ];
+
+// Pre-compute display labels — regex not allowed in Angular templates
+const STATE_LABELS: { value: string; label: string }[] = INDIAN_STATES.map((s) => ({
+  value: s,
+  label: s.split('_').join(' '),
+}));
 
 @Component({
   selector: 'app-checkout',
@@ -37,8 +43,8 @@ const INDIAN_STATES = [
         <select [(ngModel)]="form.shippingState"
                 class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white">
           <option value="">Select State *</option>
-          @for (state of states; track state) {
-            <option [value]="state">{{ state.replace(/_/g, ' ') }}</option>
+          @for (state of stateOptions; track state.value) {
+            <option [value]="state.value">{{ state.label }}</option>
           }
         </select>
         <input [(ngModel)]="form.shippingPhone" placeholder="Phone (optional)"
@@ -62,7 +68,7 @@ export class CheckoutComponent {
   private router = inject(Router);
   private cartService = inject(CartService);
 
-  states = INDIAN_STATES;
+  stateOptions = STATE_LABELS;
   submitting = false;
   error = '';
 

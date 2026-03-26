@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuardFn } from 'angular-auth-oidc-client';
+import { autoLoginPartialRoutesGuard } from 'angular-auth-oidc-client';
 
 export const routes: Routes = [
   {
@@ -16,13 +16,13 @@ export const routes: Routes = [
   },
   {
     path: 'cart',
-    canActivate: [authGuardFn],
+    canActivate: [autoLoginPartialRoutesGuard],
     loadComponent: () =>
       import('./features/cart/cart.component').then((m) => m.CartComponent),
   },
   {
     path: 'checkout',
-    canActivate: [authGuardFn],
+    canActivate: [autoLoginPartialRoutesGuard],
     loadComponent: () =>
       import('./features/checkout/checkout.component').then(
         (m) => m.CheckoutComponent
@@ -30,7 +30,7 @@ export const routes: Routes = [
   },
   {
     path: 'my-orders',
-    canActivate: [authGuardFn],
+    canActivate: [autoLoginPartialRoutesGuard],
     loadComponent: () =>
       import('./features/my-orders/my-orders.component').then(
         (m) => m.MyOrdersComponent
@@ -38,7 +38,7 @@ export const routes: Routes = [
   },
   {
     path: 'seller/add-product',
-    canActivate: [authGuardFn],
+    canActivate: [autoLoginPartialRoutesGuard],
     loadComponent: () =>
       import('./features/seller/add-product/add-product.component').then(
         (m) => m.AddProductComponent
@@ -46,17 +46,17 @@ export const routes: Routes = [
   },
   {
     path: 'vendor/dashboard',
-    canActivate: [authGuardFn],
+    canActivate: [autoLoginPartialRoutesGuard],
     loadComponent: () =>
-      import('./features/vendor/vendor-dashboard/vendor-dashboard.component').then(
+      import('./features/vendor/dashboard/vendor-dashboard.component').then(
         (m) => m.VendorDashboardComponent
       ),
   },
   {
     path: 'admin/vendors',
-    canActivate: [authGuardFn],
+    canActivate: [autoLoginPartialRoutesGuard],
     loadComponent: () =>
-      import('./features/admin/admin-vendors/admin-vendors.component').then(
+      import('./features/admin/vendor-management/admin-vendors.component').then(
         (m) => m.AdminVendorsComponent
       ),
   },

@@ -3,7 +3,7 @@ import { RouterModule } from '@angular/router';
 import { DecimalPipe, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { OidcSecurityService } from 'angular-auth-oidc-client';
-import { CartService } from '../../services/cart.service';
+import { CartService } from './cart.service';
 import { CartResponse } from '../../models/models';
 
 @Component({

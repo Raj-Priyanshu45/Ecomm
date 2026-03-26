@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
-import { AddToCartRequest, CartResponse } from '../models/models';
+import { AddToCartRequest, CartResponse } from '../../models/models';
 
 @Injectable({ providedIn: 'root' })
 export class CartService {
