@@ -27,18 +27,22 @@ import lombok.RequiredArgsConstructor;
  * ──────────────────────────────────────────────────────────────────────────────
  *
  * Customer
- *  POST   /api/orders                       — checkout (place order from cart)
- *  GET    /api/orders                       — list own orders
- *  GET    /api/orders/{orderId}             — order detail
- *  PUT    /api/orders/{orderId}/cancel      — cancel order
+ *  POST   /api/orders                              — checkout
+ *  GET    /api/orders                              — list own orders
+ *  GET    /api/orders/{orderId}                    — order detail
+ *  PUT    /api/orders/{orderId}/cancel             — cancel order
+ *  PUT    /api/orders/{orderId}/return             — request return (after delivery)
  *
  * Admin
- *  GET    /api/admin/orders                 — list all orders (filter by status)
- *  PUT    /api/admin/orders/{orderId}/status — update status (any transition)
+ *  GET    /api/admin/orders                        — list all orders
+ *  PUT    /api/admin/orders/{orderId}/status       — update status (any transition)
  *
- * Vendor (warehouse staff)
- *  GET    /api/vendor/orders                — list orders for my warehouse
- *  PUT    /api/vendor/orders/{orderId}/status — update status (limited transitions)
+ * Vendor
+ *  GET    /api/vendor/orders                       — list warehouse orders
+ *  PUT    /api/vendor/orders/{orderId}/status      — update status (limited)
+ *
+ * Support (delivery agent)
+ *  PUT    /api/support/orders/{orderId}/status     — shipping + return transitions
  * ──────────────────────────────────────────────────────────────────────────────
  */
 @RestController
@@ -82,6 +86,14 @@ public class OrderController {
         return ResponseEntity.ok(orderService.cancelOrder(orderId, auth));
     }
 
+    @PutMapping("/api/orders/{orderId}/return")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<OrderResponse> requestReturn(
+            @PathVariable Long orderId,
+            Authentication auth) {
+        return ResponseEntity.ok(orderService.requestReturn(orderId, auth));
+    }
+
     // ── Admin ──────────────────────────────────────────────────────
 
     @GetMapping("/api/admin/orders")
@@ -115,8 +127,19 @@ public class OrderController {
     }
 
     @PutMapping("/api/vendor/orders/{orderId}/status")
-    @PreAuthorize("hasRole('VENDOR') or hasRole('SUPPORT')")
+    @PreAuthorize("hasRole('VENDOR')")
     public ResponseEntity<OrderResponse> vendorUpdateStatus(
+            @PathVariable Long orderId,
+            @RequestBody @Valid UpdateOrderStatusRequest req,
+            Authentication auth) {
+        return ResponseEntity.ok(orderService.updateStatus(orderId, req, auth));
+    }
+
+    // ── Support (delivery agent + return handler) ──────────────────
+
+    @PutMapping("/api/support/orders/{orderId}/status")
+    @PreAuthorize("hasRole('SUPPORT')")
+    public ResponseEntity<OrderResponse> supportUpdateStatus(
             @PathVariable Long orderId,
             @RequestBody @Valid UpdateOrderStatusRequest req,
             Authentication auth) {

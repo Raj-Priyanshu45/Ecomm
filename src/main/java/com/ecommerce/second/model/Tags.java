@@ -2,6 +2,8 @@ package com.ecommerce.second.model;
 
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -23,16 +25,16 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name="Tags",
-    indexes= {
-        @Index(name="idx_tag_name" , columnList="name") ,
-        @Index(name="idx_tag_slug" , columnList="slug")
+@Table(name = "Tags",
+    indexes = {
+        @Index(name = "idx_tag_name", columnList = "name"),
+        @Index(name = "idx_tag_slug", columnList = "slug")
     }
 )
 public class Tags {
-    
+
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @Column(nullable = false, unique = true)
@@ -41,6 +43,7 @@ public class Tags {
     @Column(nullable = false, unique = true)
     private String slug;
 
-    @ManyToMany(mappedBy="tags" , fetch=FetchType.LAZY)
+    @JsonIgnore
+    @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY)
     private Set<Products> product;
 }

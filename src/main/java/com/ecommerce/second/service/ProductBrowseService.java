@@ -22,8 +22,7 @@ import com.ecommerce.second.model.VariantAttribute;
 import com.ecommerce.second.repo.InventoryRepo;
 import com.ecommerce.second.repo.ProductImagesRepo;
 import com.ecommerce.second.repo.ProductRepo;
-import com.ecommerce.second.repo.ProductVarientsRepo;
-import com.ecommerce.second.repo.VarImageRepo;
+
 import com.ecommerce.second.repo.VarientAttrRepo;
 
 import lombok.RequiredArgsConstructor;
@@ -36,9 +35,7 @@ public class ProductBrowseService {
     private final ProductRepo productRepo;
     private final ProductImagesRepo imageRepo;
     private final InventoryRepo inventoryRepo;
-    private final VarImageRepo varImageRepo;
     private final VarientAttrRepo attrRepo;
-    private final ProductVarientsRepo productVarientsRepo;
 
     // ─────────────────────────────────────────────────────────────
     // List all products (paginated + sortable)
@@ -66,12 +63,13 @@ public class ProductBrowseService {
 
         List<ProductImages> imageUrl = imageRepo.findByProductId(id);
         List<String> image = new ArrayList<>();
+     
 
         for(int i =0 ; i <imageUrl.size() ; i++){
                 image.add(imageUrl.get(i).getImageUrl());
         }
 
-        List<VariantAttribute> varKey = attrRepo.findByProductId(id);
+        List<VariantAttribute> varKey = attrRepo.findByProduct_Id(id);
 
         Map<String , List<String>> attr = new HashMap<>();
 
@@ -174,7 +172,8 @@ public class ProductBrowseService {
 
         return new AllProductResponse(
                 p.getId(), p.getName(), shortDesc, imageUrl,
-                p.getPrice(), inStock, new ArrayList<>(p.getTags())
+                p.getPrice(), inStock, new ArrayList<>(p.getTags()) , p.getRatingAverage()
+        , p.getReviewCount()
         );
     }
 }

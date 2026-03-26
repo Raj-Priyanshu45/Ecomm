@@ -5,16 +5,14 @@ import java.util.List;
 
 import com.ecommerce.second.model.Tags;
 
-
 public record AllProductResponse(
-    int id , 
-    String name , 
+    int id,
+    String name,
     String shortDesc,
-    String imageUrl , 
-    BigDecimal price ,
-    boolean inStock ,
-    List<Tags> tags 
-    //,double rating
-) {
-    
-}
+    String imageUrl,
+    BigDecimal price,
+    boolean inStock,
+    List<Tags> tags,
+    double rating,
+    int reviewCount
+) {}

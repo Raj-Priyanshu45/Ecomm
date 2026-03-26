@@ -1,16 +1,8 @@
 package com.ecommerce.second.service;
 
-import com.ecommerce.second.Enum.IndianState;
-import com.ecommerce.second.Enum.OrderStatus;
-import com.ecommerce.second.dto.requestDTO.PlaceOrderRequest;
-import com.ecommerce.second.dto.requestDTO.UpdateOrderStatusRequest;
-import com.ecommerce.second.dto.responseDTO.OrderItemResponse;
-import com.ecommerce.second.dto.responseDTO.OrderResponse;
-import com.ecommerce.second.exceptionHandling.AccessDeniedException;
-import com.ecommerce.second.model.*;
-import com.ecommerce.second.repo.*;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -19,8 +11,29 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import com.ecommerce.second.Enum.IndianState;
+import com.ecommerce.second.Enum.OrderStatus;
+import com.ecommerce.second.dto.requestDTO.PlaceOrderRequest;
+import com.ecommerce.second.dto.requestDTO.UpdateOrderStatusRequest;
+import com.ecommerce.second.dto.responseDTO.OrderItemResponse;
+import com.ecommerce.second.dto.responseDTO.OrderResponse;
+import com.ecommerce.second.exceptionHandling.AccessDeniedException;
+import com.ecommerce.second.model.Cart;
+import com.ecommerce.second.model.CartItem;
+import com.ecommerce.second.model.Order;
+import com.ecommerce.second.model.OrderItem;
+import com.ecommerce.second.model.Vendor;
+import com.ecommerce.second.model.VendorNotification;
+import com.ecommerce.second.model.Warehouse;
+import com.ecommerce.second.repo.InventoryRepo;
+import com.ecommerce.second.repo.OrderItemRepo;
+import com.ecommerce.second.repo.OrderRepo;
+import com.ecommerce.second.repo.VendorNotificationRepo;
+import com.ecommerce.second.repo.VendorRepo;
+import com.ecommerce.second.repo.WarehouseRepo;
+
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
@@ -44,13 +57,9 @@ public class OrderService {
     public OrderResponse placeOrder(PlaceOrderRequest req, Authentication auth) {
         String keycloakId = auth.getName();
 
-        // 1. Grab and validate the cart
         Cart cart = cartService.getCartForCheckout(keycloakId);
-
-        // 2. Resolve warehouse from shipping state
         Warehouse warehouse = resolveWarehouse(req.getShippingState());
 
-        // 3. Build Order
         Order order = orderRepo.save(Order.builder()
                 .keycloakId(keycloakId)
                 .status(OrderStatus.PLACED)
@@ -64,17 +73,11 @@ public class OrderService {
                 .warehouse(warehouse)
                 .build());
 
-        // 4. Convert cart items → order items + deduct inventory
         for (CartItem ci : cart.getItems()) {
-            String skuCode = ci.getVariant() != null
-                    ? ci.getVariant().getSkuCode()
-                    : null;
-
-            // Inventory deduction (only for variants with SKU)
+            String skuCode = ci.getVariant() != null ? ci.getVariant().getSkuCode() : null;
             if (skuCode != null) {
                 deductInventory(skuCode, ci.getQuantity());
             }
-
             orderItemRepo.save(OrderItem.builder()
                     .order(order)
                     .product(ci.getProduct())
@@ -86,12 +89,8 @@ public class OrderService {
                     .build());
         }
 
-        // 5. Clear cart
         cartService.clearCartById(cart.getId());
-
-        log.info("Order placed: id={}, keycloakId={}, warehouse={}", order.getId(), keycloakId, warehouse.getId());
-
-        // 6. Notify all vendors assigned to this warehouse
+        log.info("Order placed: id={}, keycloakId={}", order.getId(), keycloakId);
         notifyWarehouseVendors(warehouse, order);
 
         return toOrderResponse(orderRepo.findById(order.getId()).orElseThrow());
@@ -103,18 +102,79 @@ public class OrderService {
 
     public OrderResponse updateStatus(Long orderId, UpdateOrderStatusRequest req, Authentication auth) {
         Order order = getOrder(orderId);
-
         validateStatusTransition(order.getStatus(), req.getStatus(), auth);
 
         order.setStatus(req.getStatus());
-
 
         if (req.getStatus() == OrderStatus.ARRIVED || req.getStatus() == OrderStatus.DELIVERED) {
             order.setDeliveredAt(LocalDateTime.now());
         }
 
+        // When refund is issued, restore inventory
+        if (req.getStatus() == OrderStatus.REFUNDED) {
+            for (OrderItem item : order.getItems()) {
+                if (item.getSkuCode() != null) {
+                    restoreInventory(item.getSkuCode(), item.getQuantity());
+                }
+            }
+        }
+
         orderRepo.save(order);
         log.info("Order status updated: id={}, status={}", orderId, req.getStatus());
+        return toOrderResponse(order);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Customer: request return
+    // ─────────────────────────────────────────────────────────────
+
+    public OrderResponse requestReturn(Long orderId, Authentication auth) {
+        Order order = getOrder(orderId);
+
+        if (!order.getKeycloakId().equals(auth.getName())) {
+            throw new AccessDeniedException("You cannot request a return for this order");
+        }
+
+        if (order.getStatus() != OrderStatus.ARRIVED && order.getStatus() != OrderStatus.DELIVERED) {
+            throw new IllegalStateException(
+                    "Return can only be requested for orders with status ARRIVED or DELIVERED. " +
+                    "Current status: " + order.getStatus());
+        }
+
+        order.setStatus(OrderStatus.RETURN_REQUESTED);
+        orderRepo.save(order);
+        log.info("Return requested: orderId={}, keycloakId={}", orderId, auth.getName());
+
+        return toOrderResponse(order);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Customer: cancel order
+    // ─────────────────────────────────────────────────────────────
+
+    public OrderResponse cancelOrder(Long orderId, Authentication auth) {
+        Order order = getOrder(orderId);
+
+        if (!order.getKeycloakId().equals(auth.getName()) && !hasRole(auth, "ADMIN")) {
+            throw new AccessDeniedException("You cannot cancel this order");
+        }
+
+        if (order.getStatus() == OrderStatus.SHIPPED
+                || order.getStatus() == OrderStatus.OUT_FOR_DELIVERY
+                || order.getStatus() == OrderStatus.ARRIVED
+                || order.getStatus() == OrderStatus.DELIVERED) {
+            throw new IllegalStateException("Order cannot be cancelled once shipped. Please use return instead.");
+        }
+
+        for (OrderItem item : order.getItems()) {
+            if (item.getSkuCode() != null) {
+                restoreInventory(item.getSkuCode(), item.getQuantity());
+            }
+        }
+
+        order.setStatus(OrderStatus.CANCELLED);
+        orderRepo.save(order);
+        log.info("Order cancelled: id={}", orderId);
 
         return toOrderResponse(order);
     }
@@ -142,7 +202,7 @@ public class OrderService {
     }
 
     // ─────────────────────────────────────────────────────────────
-    // Admin / Vendor: list orders
+    // Admin: list all orders
     // ─────────────────────────────────────────────────────────────
 
     public Page<OrderResponse> listAllOrders(OrderStatus status, int page, int size) {
@@ -153,6 +213,10 @@ public class OrderService {
         return orderRepo.findAll(PageRequest.of(page, size,
                 Sort.by("placedAt").descending())).map(this::toOrderResponse);
     }
+
+    // ─────────────────────────────────────────────────────────────
+    // Vendor: list warehouse orders
+    // ─────────────────────────────────────────────────────────────
 
     public Page<OrderResponse> listWarehouseOrders(int warehouseId, OrderStatus status,
             int page, int size) {
@@ -165,37 +229,6 @@ public class OrderService {
     }
 
     // ─────────────────────────────────────────────────────────────
-    // Customer: cancel order
-    // ─────────────────────────────────────────────────────────────
-
-    public OrderResponse cancelOrder(Long orderId, Authentication auth) {
-        Order order = getOrder(orderId);
-
-        if (!order.getKeycloakId().equals(auth.getName()) && !hasRole(auth, "ADMIN")) {
-            throw new AccessDeniedException("You cannot cancel this order");
-        }
-
-        if (order.getStatus() == OrderStatus.SHIPPED
-                || order.getStatus() == OrderStatus.OUT_FOR_DELIVERY
-                || order.getStatus() == OrderStatus.ARRIVED) {
-            throw new IllegalStateException("Order cannot be cancelled once shipped");
-        }
-
-        // Restore inventory
-        for (OrderItem item : order.getItems()) {
-            if (item.getSkuCode() != null) {
-                restoreInventory(item.getSkuCode(), item.getQuantity());
-            }
-        }
-
-        order.setStatus(OrderStatus.CANCELLED);
-        orderRepo.save(order);
-        log.info("Order cancelled: id={}", orderId);
-
-        return toOrderResponse(order);
-    }
-
-    // ─────────────────────────────────────────────────────────────
     // Private helpers
     // ─────────────────────────────────────────────────────────────
 
@@ -204,25 +237,18 @@ public class OrderService {
                 .orElseThrow(() -> new IllegalArgumentException("Order not found: " + orderId));
     }
 
-    /**
-     * Resolve warehouse by matching the shipping state string to IndianState enum.
-     * Falls back to a default warehouse if the specific state has none.
-     */
     private Warehouse resolveWarehouse(String shippingState) {
         try {
             IndianState state = IndianState.valueOf(
                     shippingState.trim().toUpperCase().replace(" ", "_"));
             return warehouseRepo.findByState(state)
-                    .orElseGet(() -> warehouseRepo.findAll()
-                            .stream()
+                    .orElseGet(() -> warehouseRepo.findAll().stream()
                             .filter(Warehouse::isActive)
                             .findFirst()
                             .orElseThrow(() -> new IllegalStateException(
                                     "No active warehouse found. Please contact support.")));
         } catch (IllegalArgumentException e) {
-            // Could not parse state — use any active warehouse
-            return warehouseRepo.findAll()
-                    .stream()
+            return warehouseRepo.findAll().stream()
                     .filter(Warehouse::isActive)
                     .findFirst()
                     .orElseThrow(() -> new IllegalStateException("No active warehouse found"));
@@ -231,8 +257,7 @@ public class OrderService {
 
     private void deductInventory(String skuCode, int qty) {
         inventoryRepo.findBySkuCode(skuCode).ifPresent(inv -> {
-            int newAvailable = Math.max(0, inv.getAvailable() - qty);
-            inv.setAvailable(newAvailable);
+            inv.setAvailable(Math.max(0, inv.getAvailable() - qty));
             inv.setReserved(inv.getReserved() + qty);
             inventoryRepo.save(inv);
         });
@@ -246,9 +271,6 @@ public class OrderService {
         });
     }
 
-    /**
-     * Push a notification to every approved vendor whose warehouse matches the order's warehouse.
-     */
     private void notifyWarehouseVendors(Warehouse warehouse, Order order) {
         List<Vendor> vendors = vendorRepo.findAll().stream()
                 .filter(v -> v.getWarehouse() != null
@@ -259,48 +281,46 @@ public class OrderService {
             notificationRepo.save(VendorNotification.builder()
                     .vendor(vendor)
                     .title("New Order Arrived")
-                    .message("Order #" + order.getId() + " has been placed and assigned to your warehouse ("
+                    .message("Order #" + order.getId() + " placed for your warehouse ("
                             + warehouse.getName() + "). Total: ₹" + order.getTotalAmount()
-                            + ". Please confirm and pack the order.")
+                            + ". Please confirm and pack.")
                     .referenceId(String.valueOf(order.getId()))
                     .build());
         }
-
         log.info("Notified {} vendor(s) for warehouseId={}", vendors.size(), warehouse.getId());
     }
 
     /**
-     * Basic status transition guard.
-     * Admin can do anything; vendors / support follow a controlled flow.
+     * Status transition guard.
+     * ADMIN can do anything.
+     * VENDOR:   PAYMENT_CONFIRMED → CONFIRMED → PACKED → SHIPPED
+     * SUPPORT:  SHIPPED → OUT_FOR_DELIVERY → ARRIVED | DELIVERY_FAILED
+     *           RETURN_REQUESTED → RETURN_PICKED_UP → REFUNDED
      */
     private void validateStatusTransition(OrderStatus current, OrderStatus next, Authentication auth) {
-        if (hasRole(auth, "ADMIN")) return; // admins bypass transition checks
+        if (hasRole(auth, "ADMIN")) return;
 
-        // Vendors can only move: CONFIRMED → PACKED → SHIPPED
         if (hasRole(auth, "VENDOR")) {
-            boolean vendorAllowed = switch (current) {
+            boolean allowed = switch (current) {
                 case PAYMENT_CONFIRMED -> next == OrderStatus.CONFIRMED;
                 case CONFIRMED         -> next == OrderStatus.PACKED;
                 case PACKED            -> next == OrderStatus.SHIPPED;
                 default -> false;
             };
-            if (!vendorAllowed) {
-                throw new AccessDeniedException(
-                        "Vendors can only transition: PAYMENT_CONFIRMED→CONFIRMED→PACKED→SHIPPED");
-            }
+            if (!allowed) throw new AccessDeniedException(
+                    "Vendors may only transition: PAYMENT_CONFIRMED→CONFIRMED→PACKED→SHIPPED");
         }
 
-        // Delivery agents (SUPPORT) can mark: SHIPPED → OUT_FOR_DELIVERY → ARRIVED | DELIVERY_FAILED
         if (hasRole(auth, "SUPPORT")) {
-            boolean supportAllowed = switch (current) {
-                case SHIPPED           -> next == OrderStatus.OUT_FOR_DELIVERY;
-                case OUT_FOR_DELIVERY  -> next == OrderStatus.ARRIVED || next == OrderStatus.DELIVERY_FAILED;
+            boolean allowed = switch (current) {
+                case SHIPPED             -> next == OrderStatus.OUT_FOR_DELIVERY;
+                case OUT_FOR_DELIVERY    -> next == OrderStatus.ARRIVED || next == OrderStatus.DELIVERY_FAILED;
+                case RETURN_REQUESTED    -> next == OrderStatus.RETURN_PICKED_UP;
+                case RETURN_PICKED_UP    -> next == OrderStatus.REFUNDED;
                 default -> false;
             };
-            if (!supportAllowed) {
-                throw new AccessDeniedException(
-                        "Support can only transition: SHIPPED→OUT_FOR_DELIVERY→ARRIVED|DELIVERY_FAILED");
-            }
+            if (!allowed) throw new AccessDeniedException(
+                    "Invalid status transition for SUPPORT role");
         }
     }
 
