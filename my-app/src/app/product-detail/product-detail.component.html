@@ -1,0 +1,157 @@
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+  @if (loading) {
+    <div class="animate-pulse grid grid-cols-1 lg:grid-cols-2 gap-10">
+      <div class="bg-gray-100 aspect-square rounded-2xl"></div>
+      <div class="space-y-4">
+        <div class="h-8 bg-gray-100 rounded-xl w-3/4"></div>
+        <div class="h-4 bg-gray-100 rounded w-1/2"></div>
+        <div class="h-20 bg-gray-100 rounded-xl"></div>
+      </div>
+    </div>
+  } @else if (product) {
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+
+      <!-- Images -->
+      <div>
+        <div class="aspect-square bg-gray-50 rounded-2xl overflow-hidden mb-3">
+          @if (selectedImage) {
+            <img [src]="imageBase + selectedImage" alt="product"
+                 class="w-full h-full object-cover"/>
+          }
+        </div>
+        @if (product.imageUrl.length > 1) {
+          <div class="flex gap-2 flex-wrap">
+            @for (img of product.imageUrl; track $index) {
+              <div
+                (click)="selectedImage = img"
+                [class]="selectedImage === img ? 'ring-2 ring-indigo-500' : 'ring-1 ring-gray-200'"
+                class="w-16 h-16 rounded-xl overflow-hidden cursor-pointer">
+                <img [src]="imageBase + img" class="w-full h-full object-cover"/>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Info -->
+      <div class="space-y-5">
+        <div>
+          <h1 class="text-3xl font-black text-gray-900">{{ product.name }}</h1>
+          <p class="text-sm text-gray-400 mt-1">Sold by: {{ product.sellerId }}</p>
+        </div>
+
+        <p class="text-gray-600 leading-relaxed">{{ product.description }}</p>
+
+        <!-- Tags -->
+        @if (product.tags?.length) {
+          <div class="flex flex-wrap gap-2">
+            @for (tag of product.tags; track tag.id) {
+              <span class="text-xs px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full">
+                {{ tag.name }}
+              </span>
+            }
+          </div>
+        }
+
+        <!-- Variants -->
+        @for (entry of product.varients | keyvalue; track entry.key) {
+          <div>
+            <p class="text-sm font-semibold text-gray-700 mb-2 capitalize">{{ entry.key }}</p>
+            <div class="flex flex-wrap gap-2">
+              @for (val of entry.value; track val) {
+                <button
+                  (click)="selectVariant(entry.key, val)"
+                  [ngClass]="isVariantSelected(entry.key, val)
+                    ? 'bg-indigo-600 text-white border-indigo-600'
+                    : 'bg-white text-gray-700 border-gray-200 hover:border-indigo-300'"
+                  class="px-4 py-2 rounded-lg border text-sm font-medium transition-colors">
+                  {{ val }}
+                </button>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Qty + Add to cart -->
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-2 border border-gray-200 rounded-xl overflow-hidden">
+            <button (click)="quantity = quantity > 1 ? quantity - 1 : 1"
+                    class="px-4 py-3 hover:bg-gray-50 text-lg font-bold">−</button>
+            <span class="px-3 text-sm font-semibold">{{ quantity }}</span>
+            <button (click)="quantity = quantity + 1"
+                    class="px-4 py-3 hover:bg-gray-50 text-lg font-bold">+</button>
+          </div>
+          <button
+            (click)="addToCart()"
+            class="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-colors">
+            Add to Cart
+          </button>
+        </div>
+
+        @if (cartMessage) {
+          <p class="text-green-600 text-sm font-medium">✓ {{ cartMessage }}</p>
+        }
+      </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="mt-16 border-t border-gray-100 pt-10">
+      <h2 class="text-2xl font-black text-gray-900 mb-6">Customer Reviews</h2>
+
+      @if (isAuthenticated) {
+        <div class="bg-gray-50 rounded-2xl p-6 mb-8">
+          <h3 class="font-semibold text-gray-800 mb-4">Write a Review</h3>
+
+          <div class="flex gap-2 mb-4">
+            @for (star of [1,2,3,4,5]; track star) {
+              <button (click)="newRating = star">
+                <svg [class]="star <= newRating ? 'text-yellow-400' : 'text-gray-200'"
+                     class="w-7 h-7 fill-current transition-colors" viewBox="0 0 20 20">
+                  <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
+                </svg>
+              </button>
+            }
+          </div>
+
+          <textarea
+            [(ngModel)]="newComment"
+            rows="3"
+            placeholder="Share your experience..."
+            class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white resize-none">
+          </textarea>
+
+          @if (reviewError) {
+            <p class="text-red-500 text-xs mt-2">{{ reviewError }}</p>
+          }
+          @if (reviewSuccess) {
+            <p class="text-green-600 text-xs mt-2">{{ reviewSuccess }}</p>
+          }
+
+          <button (click)="submitReview()"
+                  class="mt-3 px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 transition-colors">
+            Submit Review
+          </button>
+        </div>
+      }
+
+      @if (reviews.length === 0) {
+        <p class="text-gray-400 text-sm">No reviews yet. Be the first!</p>
+      } @else {
+        <div class="space-y-4">
+          @for (review of reviews; track review.reviewId) {
+            <div class="bg-white border border-gray-100 rounded-2xl p-5">
+              <div class="flex items-center justify-between mb-2">
+                <app-star-rating [rating]="review.rating" [showCount]="false"/>
+                <span class="text-xs text-gray-400">{{ review.reviewerKeycloakId }}</span>
+              </div>
+              @if (review.comment) {
+                <p class="text-sm text-gray-600">{{ review.comment }}</p>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>
