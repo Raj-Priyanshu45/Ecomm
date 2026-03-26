@@ -1,0 +1,77 @@
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <h1 class="text-3xl font-black text-gray-900 mb-6">Your Cart</h1>
+
+  @if (loading) {
+    <div class="space-y-4">
+      @for (i of [1,2,3]; track i) {
+        <div class="h-24 bg-gray-100 rounded-2xl animate-pulse"></div>
+      }
+    </div>
+  } @else if (!cart || cart.items.length === 0) {
+    <div class="flex flex-col items-center justify-center py-24 text-gray-400">
+      <svg class="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+      </svg>
+      <p class="text-lg font-medium">Your cart is empty</p>
+      <a routerLink="/" class="mt-4 text-indigo-600 hover:underline text-sm">Continue Shopping</a>
+    </div>
+  } @else {
+    <div class="space-y-3 mb-6">
+      @for (item of cart.items; track item.cartItemId) {
+        <div class="flex items-center gap-4 bg-white border border-gray-100 rounded-2xl p-4">
+          <div class="w-16 h-16 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0">
+            @if (item.productImage) {
+              <img [src]="'http://localhost:8080' + item.productImage"
+                   [alt]="item.productName"
+                   class="w-full h-full object-cover"/>
+            }
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="font-semibold text-gray-900 truncate text-sm">{{ item.productName }}</h3>
+            @if (item.variantLabel) {
+              <p class="text-xs text-gray-400">{{ item.variantLabel }}</p>
+            }
+            <p class="text-sm font-bold mt-1">₹{{ item.priceAtAddition | number:'1.0-0' }}</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button (click)="updateQuantity(item.cartItemId, item.quantity - 1)"
+                    class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 text-lg font-bold">
+              −
+            </button>
+            <span class="w-8 text-center text-sm font-semibold">{{ item.quantity }}</span>
+            <button (click)="updateQuantity(item.cartItemId, item.quantity + 1)"
+                    class="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 text-lg font-bold">
+              +
+            </button>
+          </div>
+          <div class="text-right flex-shrink-0">
+            <p class="font-bold text-gray-700">₹{{ item.lineTotal | number:'1.0-0' }}</p>
+            <button (click)="removeItem(item.cartItemId)"
+                    class="text-xs text-red-400 hover:text-red-600 mt-1">Remove</button>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Summary -->
+    <div class="bg-gray-50 rounded-2xl p-6">
+      <div class="flex justify-between items-center mb-2">
+        <span class="text-sm text-gray-600">Items ({{ cart.totalItemCount }})</span>
+        <span>₹{{ cart.totalAmount | number:'1.0-0' }}</span>
+      </div>
+      <div class="flex justify-between items-center font-bold text-lg pt-3 border-t border-gray-200">
+        <span>Total</span>
+        <span>₹{{ cart.totalAmount | number:'1.0-0' }}</span>
+      </div>
+      <a routerLink="/checkout"
+         class="block mt-4 w-full py-3 bg-indigo-600 text-white text-center rounded-xl font-semibold hover:bg-indigo-700 transition-colors">
+        Proceed to Checkout
+      </a>
+      <button (click)="clearCart()"
+              class="block mt-2 w-full py-2 text-sm text-gray-500 hover:text-red-500 transition-colors">
+        Clear Cart
+      </button>
+    </div>
+  }
+</div>

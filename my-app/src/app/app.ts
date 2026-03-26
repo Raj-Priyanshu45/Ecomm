@@ -1,12 +1,26 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { OidcSecurityService } from 'angular-auth-oidc-client';
+import { HeaderComponent } from './core/components/header/header.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
-  templateUrl: './app.html',
-  styleUrl: './app.css'
+  standalone: true,
+  imports: [RouterOutlet, HeaderComponent],
+  template: `
+    <app-header />
+    <main>
+      <router-outlet />
+    </main>
+  `,
+  styles: [`
+    main { min-height: calc(100vh - 64px); background: #f9fafb; }
+  `],
 })
-export class App {
-  protected readonly title = signal('my-app');
+export class App implements OnInit {
+  private oidc = inject(OidcSecurityService);
+
+  ngOnInit(): void {
+    this.oidc.checkAuth().subscribe();
+  }
 }

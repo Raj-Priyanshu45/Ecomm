@@ -1,27 +1,22 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { KeyValuePipe, NgClass } from '@angular/common';
 import { OidcSecurityService } from 'angular-auth-oidc-client';
-import { ProductService } from '../../services/product.service';
-import { CartService } from '../../services/cart.service';
-import { ReviewService } from '../../services/review.service';
-import {
-  SingleProductResponse,
-  ReviewResponse,
-  CreateReviewRequest,
-} from '../../models/models';
-import { StarRatingComponent } from '../../shared/components/star-rating/star-rating.component';
-import { NgClass, CurrencyPipe } from '@angular/common';
+import { ProductService } from '../services/product.service';
+import { CartService } from '../services/cart.service';
+import { ReviewService } from '../services/review.service';
+import { SingleProductResponse, ReviewResponse, CreateReviewRequest } from '../models/models';
+import { StarRatingComponent } from '../shared/components/star-rating/star-rating.component';
 
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [FormsModule, StarRatingComponent, NgClass, CurrencyPipe],
+  imports: [FormsModule, StarRatingComponent, NgClass, KeyValuePipe],
   templateUrl: './product-detail.component.html',
 })
 export class ProductDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
-  private router = inject(Router);
   private productService = inject(ProductService);
   private cartService = inject(CartService);
   private reviewService = inject(ReviewService);
@@ -32,18 +27,14 @@ export class ProductDetailComponent implements OnInit {
   loading = true;
   isAuthenticated = false;
 
-  // Image viewer
   selectedImage = '';
 
-  // Variant selection
   selectedVariantKey = '';
   selectedVariantValue = '';
 
-  // Cart
   quantity = 1;
   cartMessage = '';
 
-  // Reviews
   reviews: ReviewResponse[] = [];
   reviewPage = 0;
   totalReviewPages = 0;
@@ -76,7 +67,7 @@ export class ProductDetailComponent implements OnInit {
 
   loadReviews(): void {
     this.reviewService.getReviews(this.productId, this.reviewPage).subscribe({
-      next: (res: any) => {
+      next: (res) => {
         this.reviews = res.content ?? [];
         this.totalReviewPages = res.totalPages ?? 0;
       },
@@ -120,7 +111,7 @@ export class ProductDetailComponent implements OnInit {
         this.newRating = 5;
         this.loadReviews();
       },
-      error: (err) => {
+      error: (err: any) => {
         this.reviewError = err.error?.mess?.[0] ?? 'Could not submit review.';
       },
     });
