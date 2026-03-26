@@ -1,7 +1,9 @@
 package com.ecommerce.second.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,9 +18,13 @@ import com.ecommerce.second.dto.responseDTO.SingleProductResponse;
 import com.ecommerce.second.exceptionHandling.ProductNotFoundException;
 import com.ecommerce.second.model.ProductImages;
 import com.ecommerce.second.model.Products;
+import com.ecommerce.second.model.VariantAttribute;
 import com.ecommerce.second.repo.InventoryRepo;
 import com.ecommerce.second.repo.ProductImagesRepo;
 import com.ecommerce.second.repo.ProductRepo;
+import com.ecommerce.second.repo.ProductVarientsRepo;
+import com.ecommerce.second.repo.VarImageRepo;
+import com.ecommerce.second.repo.VarientAttrRepo;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,6 +36,9 @@ public class ProductBrowseService {
     private final ProductRepo productRepo;
     private final ProductImagesRepo imageRepo;
     private final InventoryRepo inventoryRepo;
+    private final VarImageRepo varImageRepo;
+    private final VarientAttrRepo attrRepo;
+    private final ProductVarientsRepo productVarientsRepo;
 
     // ─────────────────────────────────────────────────────────────
     // List all products (paginated + sortable)
@@ -55,13 +64,45 @@ public class ProductBrowseService {
         Products product = productRepo.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found: " + id));
 
+        List<ProductImages> imageUrl = imageRepo.findByProductId(id);
+        List<String> image = new ArrayList<>();
+
+        for(int i =0 ; i <imageUrl.size() ; i++){
+                image.add(imageUrl.get(i).getImageUrl());
+        }
+
+        List<VariantAttribute> varKey = attrRepo.findByProductId(id);
+
+        Map<String , List<String>> attr = new HashMap<>();
+
+        for(int i = 0 ; i < varKey.size() ; i++){
+
+                String key = varKey.get(i).getName();
+                
+                if(!attr.containsKey(key)){
+                        List<String> list = new ArrayList<>();
+                        attr.put(key, list);
+                }
+        }
+
+        for(int i = 0 ; i < varKey.size() ; i++){
+
+                VariantAttribute var = varKey.get(i);
+                String key = var.getName();
+                String value = var.getValue();
+
+                attr.get(key).add(value);
+        }
+
+
         return new SingleProductResponse(
                 product.getName(),
                 product.getDescription(),
                 product.getSeller().getKeyCloakId(),
                 product.getCreatedAt(),
                 product.getUpdatedAt(),
-                new ArrayList<>(product.getTags())
+                new ArrayList<>(product.getTags()),
+                image , attr
         );
     }
 

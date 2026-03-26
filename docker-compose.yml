@@ -25,6 +25,14 @@ services:
       KC_DB_PASSWORD: root
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_SMTP_HOST: smtp.gmail.com
+      KC_SMTP_PORT: 587
+      KC_SMTP_FROM: devxpriyanshu@gmail.com
+      KC_SMTP_FROM_DISPLAY_NAME: Ecom App
+      KC_SMTP_AUTH: "true"
+      KC_SMTP_STARTTLS: "true"
+      KC_SMTP_USER: devxpriyanshu@gmail.com
+      KC_SMTP_PASSWORD: tkau cajt ltto zuvc
     ports:
       - "8181:8080"
     depends_on:
