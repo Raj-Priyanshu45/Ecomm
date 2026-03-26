@@ -134,6 +134,7 @@ public class VariantService {
                 .name(request.getKey())
                 .value(request.getValue())
                 .skuCode(skuCode)
+                .product(product)
                 .build());
 
         inventoryRepo.save(Inventory.builder()
