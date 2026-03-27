@@ -80,4 +80,10 @@ export const routes: Routes = [
     path: '**',
     redirectTo: '',
   },
+  {
+  path: 'seller/add-product',
+  loadComponent: () =>
+    import('./features/seller/add-product/add-product.component')
+      .then(m => m.AddProductComponent)
+},
 ];
