@@ -45,6 +45,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'vendor/register',
+    canActivate: [autoLoginPartialRoutesGuard],
+    loadComponent: () =>
+      import('./features/vendor/register/vendor-register.component').then(
+        (m) => m.VendorRegisterComponent
+      ),
+  },
+  {
     path: 'vendor/dashboard',
     canActivate: [autoLoginPartialRoutesGuard],
     loadComponent: () =>
@@ -58,6 +66,14 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/admin/vendor-management/admin-vendors.component').then(
         (m) => m.AdminVendorsComponent
+      ),
+  },
+  {
+    path: 'admin/orders',
+    canActivate: [autoLoginPartialRoutesGuard],
+    loadComponent: () =>
+      import('./features/admin/orders/admin-orders.component').then(
+        (m) => m.AdminOrdersComponent
       ),
   },
   {
