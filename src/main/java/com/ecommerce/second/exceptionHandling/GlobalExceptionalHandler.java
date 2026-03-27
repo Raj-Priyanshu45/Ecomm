@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -38,6 +39,21 @@ public class GlobalExceptionalHandler extends ResponseEntityExceptionHandler{
 
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body("Access denied");
+    }
+
+
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<ErrorMessageFormat> handleSpringAuthDenied(
+            AuthorizationDeniedException ex, WebRequest request) {
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                ErrorMessageFormat.builder()
+                        .timeStamp(LocalDateTime.now())
+                        .mess(List.of("Access denied: you don't have the required role"))
+                        .desc(request.getDescription(false))
+                        .build()
+        );
     }
 
     @Override
