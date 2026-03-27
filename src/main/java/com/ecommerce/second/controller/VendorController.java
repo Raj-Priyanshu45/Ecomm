@@ -77,7 +77,7 @@ public class VendorController {
     // ── Vendor registration ────────────────────────────────────────
 
     @PostMapping("/api/vendor/register")
-    @PreAuthorize("hasRole('VENDOR')")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<VendorResponse> register(
             @RequestBody @Valid VendorRegistrationRequest req,
             Authentication auth) {
