@@ -42,7 +42,7 @@
           </a>
         }
 
-        @if (hasRole('SELLER') || hasRole('ADMIN')) {
+        @if (isAuthenticated) {
           <a routerLink="/seller/add-product" routerLinkActive="bg-indigo-50 text-indigo-700"
              class="px-3 py-2 rounded-lg text-gray-600 hover:text-indigo-700 hover:bg-indigo-50 transition-all duration-150">
             Add Product
@@ -146,7 +146,7 @@
         </a>
       }
 
-      @if (hasRole('SELLER') || hasRole('ADMIN')) {
+      @if (isAuthenticated) {
         <a routerLink="/seller/add-product" (click)="mobileMenuOpen=false"
            class="flex items-center gap-2 px-3 py-2.5 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors">
           Add Product

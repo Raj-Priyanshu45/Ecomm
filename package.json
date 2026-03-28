@@ -1,5 +1,0 @@
-{
-  "dependencies": {
-    "angular-auth-oidc-client": "^21.0.1"
-  }
-}
