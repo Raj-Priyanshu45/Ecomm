@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { DecimalPipe, DatePipe } from '@angular/common';
@@ -309,9 +309,11 @@ interface Order {
     </div>
   `,
 })
-export class VendorDashboardComponent implements OnInit {
+export class VendorDashboardComponent implements OnInit, OnDestroy {
   private http = inject(HttpClient);
   private readonly base = 'http://localhost:8080';
+
+  private pollingInterval: any;
 
   loading = true;
   ordersLoading = false;
@@ -334,6 +336,7 @@ export class VendorDashboardComponent implements OnInit {
         if (p.status === 'APPROVED' && p.warehouseId) {
           this.loadNotifications();
           this.loadOrders();
+          this.startPolling();
         }
       },
       error: () => {
@@ -341,6 +344,18 @@ export class VendorDashboardComponent implements OnInit {
         this.loading = false;
       },
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+    }
+  }
+
+  startPolling(): void {
+    this.pollingInterval = setInterval(() => {
+      this.loadNotifications();
+    }, 30000); // Check every 30s
   }
 
   loadNotifications(): void {

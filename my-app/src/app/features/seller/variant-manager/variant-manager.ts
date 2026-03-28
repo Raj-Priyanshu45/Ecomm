@@ -46,10 +46,9 @@ export class VariantManager implements OnInit {
 
   loadVariants() {
     this.loading = true;
-    // Get product detail which includes variants
-    this.http.get<any>(`http://localhost:8080/api/browse/products/${this.productId}`).subscribe({
+    this.productService.getProductVariants(this.productId).subscribe({
       next: (res) => {
-        this.variants = res.variants || [];
+        this.variants = res || [];
         this.loading = false;
       },
       error: () => {

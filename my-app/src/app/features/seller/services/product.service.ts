@@ -60,6 +60,10 @@ export class ProductService {
     return this.http.get(`${this.baseUrl}/${productId}/images`);
   }
 
+  getProductVariants(productId: number): Observable<any[]> {
+    return this.http.get<any[]>(`http://localhost:8080/api/browse/products/${productId}/variants`);
+  }
+
   replaceImage(productId: number, imageId: number, file: File): Observable<any> {
     const formData = new FormData();
     formData.append('image', file);

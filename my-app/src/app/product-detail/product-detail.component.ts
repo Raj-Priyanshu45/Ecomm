@@ -34,6 +34,7 @@ export class ProductDetailComponent implements OnInit {
   selectedVariantKey = '';
   selectedVariantValue = '';
 
+  fullVariants: any[] = [];
   quantity = 1;
   cartMessage = '';
 
@@ -74,6 +75,12 @@ export class ProductDetailComponent implements OnInit {
         this.product = p;
         this.selectedImage = p.imageUrl?.[0] ?? '';
         this.loading = false;
+        
+        // Load variants after getting basic product
+        this.productService.getProductVariants(this.productId).subscribe({
+          next: vs => this.fullVariants = vs || [],
+          error: () => this.fullVariants = []
+        });
       },
       error: () => (this.loading = false),
     });
@@ -102,8 +109,25 @@ export class ProductDetailComponent implements OnInit {
       this.oidc.authorize();
       return;
     }
+
+    let reqVariantId: number | undefined = undefined;
+    if (this.selectedVariantKey && this.selectedVariantValue) {
+      const match = this.fullVariants.find(
+        (v) => v.key === this.selectedVariantKey && v.value === this.selectedVariantValue
+      );
+      if (match) {
+        reqVariantId = match.id;
+      } else {
+        alert('Please select a valid variant combination.');
+        return;
+      }
+    } else if (this.product?.variants && Object.keys(this.product.variants).length > 0) {
+      alert('Please select a variant option.');
+      return;
+    }
+
     this.cartService
-      .addItem({ productId: this.productId, quantity: this.quantity })
+      .addItem({ productId: this.productId, variantId: reqVariantId, quantity: this.quantity })
       .subscribe({
         next: () => (this.cartMessage = 'Item added to your cart successfully!'),
         error: () => (this.cartMessage = 'Failed to add to cart.'),

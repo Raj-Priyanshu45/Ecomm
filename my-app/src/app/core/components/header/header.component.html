@@ -80,6 +80,10 @@
              class="px-3 py-2 rounded-lg text-gray-600 hover:text-red-700 hover:bg-red-50 transition-all duration-150">
             Orders
           </a>
+          <a routerLink="/admin/warehouses" routerLinkActive="bg-red-50 text-red-700"
+             class="px-3 py-2 rounded-lg text-gray-600 hover:text-red-700 hover:bg-red-50 transition-all duration-150">
+            Warehouses
+          </a>
         }
 
         @if (hasRole('SUPPORT')) {
@@ -202,6 +206,10 @@
         <a routerLink="/admin/orders" (click)="mobileMenuOpen=false"
            class="px-3 py-2.5 rounded-xl block text-red-700 hover:bg-red-50 transition-colors">
           Admin: Orders
+        </a>
+        <a routerLink="/admin/warehouses" (click)="mobileMenuOpen=false"
+           class="px-3 py-2.5 rounded-xl block text-red-700 hover:bg-red-50 transition-colors">
+          Admin: Warehouses
         </a>
       }
 

@@ -26,6 +26,10 @@ export class ProductService {
     );
   }
 
+  getProductVariants(id: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/api/browse/products/${id}/variants`);
+  }
+
   getProductsByTag(slug: string, page = 0): Observable<ApiResponse<AllProductResponse>> {
     return this.http.get<ApiResponse<AllProductResponse>>(
       `${this.baseUrl}/api/browse/products/tag/${slug}?page=${page}`
