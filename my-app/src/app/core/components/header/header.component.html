@@ -40,12 +40,20 @@
              class="px-3 py-2 rounded-lg text-gray-600 hover:text-indigo-700 hover:bg-indigo-50 transition-all duration-150">
             My Orders
           </a>
+          <a routerLink="/profile/addresses" routerLinkActive="bg-indigo-50 text-indigo-700"
+             class="px-3 py-2 rounded-lg text-gray-600 hover:text-indigo-700 hover:bg-indigo-50 transition-all duration-150">
+            Addresses
+          </a>
         }
 
         @if (isAuthenticated) {
           <a routerLink="/seller/add-product" routerLinkActive="bg-indigo-50 text-indigo-700"
              class="px-3 py-2 rounded-lg text-gray-600 hover:text-indigo-700 hover:bg-indigo-50 transition-all duration-150">
             Add Product
+          </a>
+          <a routerLink="/seller/products" routerLinkActive="bg-indigo-50 text-indigo-700"
+             class="px-3 py-2 rounded-lg text-gray-600 hover:text-indigo-700 hover:bg-indigo-50 transition-all duration-150">
+            Seller Dashboard
           </a>
         }
 
@@ -71,6 +79,13 @@
           <a routerLink="/admin/orders" routerLinkActive="bg-red-50 text-red-700"
              class="px-3 py-2 rounded-lg text-gray-600 hover:text-red-700 hover:bg-red-50 transition-all duration-150">
             Orders
+          </a>
+        }
+
+        @if (hasRole('SUPPORT')) {
+          <a routerLink="/support/orders" routerLinkActive="bg-cyan-50 text-cyan-700"
+             class="px-3 py-2 rounded-lg text-gray-600 hover:text-cyan-700 hover:bg-cyan-50 transition-all duration-150">
+            Delivery Support
           </a>
         }
       </nav>
@@ -144,12 +159,24 @@
           </svg>
           My Orders
         </a>
+        <a routerLink="/profile/addresses" (click)="mobileMenuOpen=false"
+           class="flex items-center gap-2 px-3 py-2.5 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors">
+          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+          </svg>
+          Addresses
+        </a>
       }
 
       @if (isAuthenticated) {
         <a routerLink="/seller/add-product" (click)="mobileMenuOpen=false"
            class="flex items-center gap-2 px-3 py-2.5 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors">
           Add Product
+        </a>
+        <a routerLink="/seller/products" (click)="mobileMenuOpen=false"
+           class="flex items-center gap-2 px-3 py-2.5 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors">
+          Seller Dashboard
         </a>
       }
 
@@ -175,6 +202,13 @@
         <a routerLink="/admin/orders" (click)="mobileMenuOpen=false"
            class="px-3 py-2.5 rounded-xl block text-red-700 hover:bg-red-50 transition-colors">
           Admin: Orders
+        </a>
+      }
+
+      @if (hasRole('SUPPORT')) {
+        <a routerLink="/support/orders" (click)="mobileMenuOpen=false"
+           class="px-3 py-2.5 rounded-xl block text-cyan-700 hover:bg-cyan-50 transition-colors">
+          Delivery Support
         </a>
       }
 

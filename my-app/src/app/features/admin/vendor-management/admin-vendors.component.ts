@@ -46,15 +46,23 @@ import { FormsModule } from '@angular/forms';
                   }
                 </div>
                 @if (vendor.status === 'PENDING') {
-                  <div class="flex gap-2">
-                    <button (click)="approve(vendor.id)"
-                            class="px-4 py-2 bg-green-600 text-white text-sm rounded-xl hover:bg-green-700 transition-colors">
-                      Approve
-                    </button>
-                    <button (click)="reject(vendor.id)"
-                            class="px-4 py-2 bg-red-100 text-red-600 text-sm rounded-xl hover:bg-red-200 transition-colors">
-                      Reject
-                    </button>
+                  <div class="flex flex-col items-end gap-2">
+                    <select [(ngModel)]="selectedWarehouses[vendor.id]" class="text-sm bg-gray-50 border border-gray-200 text-gray-700 rounded-lg px-3 py-1.5 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                      <option [ngValue]="undefined">Assign Warehouse...</option>
+                      @for (w of warehouses; track w.id) {
+                        <option [value]="w.id">{{w.name}} ({{w.city}})</option>
+                      }
+                    </select>
+                    <div class="flex gap-2">
+                      <button (click)="approve(vendor.id)" [disabled]="!selectedWarehouses[vendor.id]"
+                              class="px-4 py-1.5 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors">
+                        Approve
+                      </button>
+                      <button (click)="reject(vendor.id)"
+                              class="px-4 py-1.5 bg-rose-100 text-rose-700 text-sm font-semibold rounded-lg hover:bg-rose-200 transition-colors">
+                        Reject
+                      </button>
+                    </div>
                   </div>
                 }
               </div>
@@ -70,11 +78,22 @@ export class AdminVendorsComponent implements OnInit {
   private baseUrl = 'http://localhost:8080';
 
   vendors: any[] = [];
+  warehouses: any[] = [];
+  selectedWarehouses: Record<number, number> = {};
   loading = true;
   selectedStatus = 'PENDING';
 
   ngOnInit(): void {
     this.loadVendors();
+    this.loadWarehouses();
+  }
+
+  loadWarehouses(): void {
+    this.http.get<any>(`${this.baseUrl}/api/admin/warehouses`).subscribe({
+      next: (res) => {
+        this.warehouses = res.content || res || [];
+      }
+    });
   }
 
   loadVendors(): void {
@@ -91,9 +110,14 @@ export class AdminVendorsComponent implements OnInit {
   }
 
   approve(vendorId: number): void {
+    const warehouseId = this.selectedWarehouses[vendorId];
+    if (!warehouseId) return;
     this.http
-      .post(`${this.baseUrl}/api/admin/vendors/approve`, { vendorId })
-      .subscribe({ next: () => this.loadVendors() });
+      .post(`${this.baseUrl}/api/admin/vendors/approve`, { vendorId, warehouseId })
+      .subscribe({ next: () => {
+        delete this.selectedWarehouses[vendorId];
+        this.loadVendors();
+      } });
   }
 
   reject(vendorId: number): void {

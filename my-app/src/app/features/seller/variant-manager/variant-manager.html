@@ -1,0 +1,149 @@
+<div class="min-h-screen bg-[#0f172a] p-8 relative overflow-hidden text-gray-100">
+  <!-- Animated Background Orbs -->
+  <div class="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+    <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-violet-600/20 blur-[100px] animate-pulse-slow"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-cyan-600/20 blur-[120px] animate-pulse-slow" style="animation-delay: 2s;"></div>
+  </div>
+
+  <div class="max-w-5xl mx-auto z-10 animate-fade-in">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+      <div>
+        <a routerLink="/seller/products" class="text-gray-400 hover:text-gray-200 text-sm mb-2 inline-flex items-center gap-1 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          Back to Products
+        </a>
+        <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-cyan-400">Variant Manager</h1>
+        <p class="text-gray-400 mt-1">Manage product variants — size, color, material, etc.</p>
+      </div>
+      <button (click)="showAddForm = !showAddForm"
+              class="bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white font-semibold py-2.5 px-5 rounded-xl shadow-lg transition-all hover:scale-105 active:scale-95 flex items-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        @if (showAddForm) { Cancel } @else { Add Variant }
+      </button>
+    </div>
+
+    <!-- Add Variant Form -->
+    @if (showAddForm) {
+      <div class="bg-gray-900/60 backdrop-blur-xl border border-gray-700/50 rounded-2xl shadow-2xl p-6 mb-8 animate-fade-in">
+        <h2 class="text-xl font-bold text-gray-100 mb-5">New Variant</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-400 mb-1">Attribute Key</label>
+            <input [(ngModel)]="newKey" placeholder="e.g. Color, Size" class="w-full bg-gray-800/50 border border-gray-700 rounded-xl px-4 py-3 text-gray-100 focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all placeholder-gray-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-400 mb-1">Value</label>
+            <input [(ngModel)]="newValue" placeholder="e.g. Red, XL" class="w-full bg-gray-800/50 border border-gray-700 rounded-xl px-4 py-3 text-gray-100 focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all placeholder-gray-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-400 mb-1">Price</label>
+            <input type="number" [(ngModel)]="newPrice" class="w-full bg-gray-800/50 border border-gray-700 rounded-xl px-4 py-3 text-gray-100 focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-400 mb-1">Quantity</label>
+            <input type="number" [(ngModel)]="newQuantity" min="1" class="w-full bg-gray-800/50 border border-gray-700 rounded-xl px-4 py-3 text-gray-100 focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all">
+          </div>
+        </div>
+        <div class="mb-5">
+          <label class="block text-sm font-medium text-gray-400 mb-1">Variant Images</label>
+          <input type="file" multiple accept="image/*" (change)="onFilesSelected($event)" class="w-full text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-violet-500/20 file:text-violet-400 hover:file:bg-violet-500/30 transition-all">
+        </div>
+        <button (click)="addVariant()" [disabled]="submitting || !newKey || !newValue"
+                class="bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+          @if (submitting) {
+            <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+            Adding…
+          } @else {
+            Save Variant
+          }
+        </button>
+      </div>
+    }
+
+    <!-- Loading -->
+    @if (loading) {
+      <div class="flex justify-center items-center h-64">
+        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-violet-500"></div>
+      </div>
+    }
+
+    <!-- Empty State -->
+    @if (!loading && variants.length === 0) {
+      <div class="bg-gray-900/40 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-12 text-center">
+        <svg class="mx-auto h-20 w-20 text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+        <h2 class="text-2xl font-bold text-gray-200 mb-2">No Variants Yet</h2>
+        <p class="text-gray-400">Click "Add Variant" to create size, color, or other variations.</p>
+      </div>
+    }
+
+    <!-- Variant Cards -->
+    @if (!loading && variants.length > 0) {
+      <div class="space-y-4">
+        @for (v of variants; track v.id) {
+          <div class="bg-gray-900/40 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-5 hover:border-violet-500/30 transition-all group">
+            <div class="flex flex-col sm:flex-row justify-between gap-4">
+              <!-- Info -->
+              <div class="flex-1">
+                <div class="flex items-center gap-3 mb-3">
+                  <span class="px-3 py-1 rounded-full text-xs font-bold bg-violet-500/20 text-violet-400 border border-violet-500/30 uppercase">{{v.key}}</span>
+                  <span class="text-lg font-bold text-gray-100">{{v.value}}</span>
+                </div>
+
+                <!-- Price (inline edit) -->
+                <div class="flex items-center gap-3 mb-2">
+                  <span class="text-sm text-gray-400 w-16">Price:</span>
+                  @if (editingPriceId === v.id) {
+                    <input type="number" [(ngModel)]="editPrice" class="bg-gray-800 border border-violet-500 rounded-lg px-3 py-1 text-gray-100 w-32 text-sm focus:ring-1 focus:ring-violet-500">
+                    <button (click)="savePrice(v)" class="text-emerald-400 hover:text-emerald-300 text-sm font-medium">Save</button>
+                    <button (click)="editingPriceId = null" class="text-gray-400 hover:text-gray-300 text-sm">Cancel</button>
+                  } @else {
+                    <span class="text-gray-200 font-medium">₹{{v.price}}</span>
+                    <button (click)="startEditPrice(v)" class="text-violet-400 hover:text-violet-300 text-xs opacity-0 group-hover:opacity-100 transition-opacity">Edit</button>
+                  }
+                </div>
+
+                <!-- Stock (inline edit) -->
+                <div class="flex items-center gap-3">
+                  <span class="text-sm text-gray-400 w-16">Stock:</span>
+                  @if (editingStockId === v.id) {
+                    <input type="number" [(ngModel)]="editStock" class="bg-gray-800 border border-violet-500 rounded-lg px-3 py-1 text-gray-100 w-32 text-sm focus:ring-1 focus:ring-violet-500">
+                    <button (click)="saveStock(v)" class="text-emerald-400 hover:text-emerald-300 text-sm font-medium">Save</button>
+                    <button (click)="editingStockId = null" class="text-gray-400 hover:text-gray-300 text-sm">Cancel</button>
+                  } @else {
+                    <span class="text-gray-200 font-medium">{{v.quantity}}</span>
+                    <button (click)="startEditStock(v)" class="text-violet-400 hover:text-violet-300 text-xs opacity-0 group-hover:opacity-100 transition-opacity">Edit</button>
+                  }
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div class="flex items-start gap-2">
+                <button (click)="deleteVariant(v)" class="p-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-lg transition-colors border border-rose-500/20" title="Delete Variant">
+                  <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Variant Images -->
+            @if (v.images && v.images.length > 0) {
+              <div class="mt-4 pt-4 border-t border-gray-700/50">
+                <p class="text-sm text-gray-400 mb-2">Images</p>
+                <div class="flex flex-wrap gap-3">
+                  @for (img of v.images; track img.id || $index) {
+                    <div class="relative h-20 w-20 rounded-xl overflow-hidden border border-gray-700/50 shadow-inner">
+                      <img [src]="img.imageUrl || img" [alt]="v.value" class="h-full w-full object-cover">
+                      @if (img.primaryImage) {
+                        <div class="absolute top-0 left-0 bg-violet-600 text-[9px] text-white px-1.5 py-0.5 rounded-br-lg font-bold">★</div>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

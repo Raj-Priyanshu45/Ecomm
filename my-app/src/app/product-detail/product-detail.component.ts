@@ -1,5 +1,5 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { KeyValuePipe, NgClass } from '@angular/common';
 import { OidcSecurityService } from 'angular-auth-oidc-client';
@@ -12,11 +12,12 @@ import { StarRatingComponent } from '../shared/components/star-rating/star-ratin
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [FormsModule, StarRatingComponent, NgClass, KeyValuePipe],
+  imports: [FormsModule, StarRatingComponent, NgClass, KeyValuePipe, RouterModule],
   templateUrl: './product-detail.component.html',
 })
 export class ProductDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private productService = inject(ProductService);
   private cartService = inject(CartService);
   private reviewService = inject(ReviewService);
@@ -26,6 +27,7 @@ export class ProductDetailComponent implements OnInit {
   productId!: number;
   loading = true;
   isAuthenticated = false;
+  currentUserId: string | null = null;
 
   selectedImage = '';
 
@@ -43,12 +45,24 @@ export class ProductDetailComponent implements OnInit {
   reviewError = '';
   reviewSuccess = '';
 
+  // Review Edit State
+  editingReviewId: number | null = null;
+  editRating = 5;
+  editComment = '';
+  editError = '';
+
   imageBase = 'http://localhost:8080';
 
   ngOnInit(): void {
     this.productId = Number(this.route.snapshot.paramMap.get('id'));
     this.oidc.isAuthenticated$.subscribe(({ isAuthenticated }) => {
       this.isAuthenticated = isAuthenticated;
+      if (isAuthenticated) {
+        this.oidc.getUserData().subscribe(userData => {
+           // Keycloak uses 'sub' for the user ID
+           this.currentUserId = userData?.sub || null;
+        });
+      }
     });
     this.loadProduct();
     this.loadReviews();
@@ -91,10 +105,18 @@ export class ProductDetailComponent implements OnInit {
     this.cartService
       .addItem({ productId: this.productId, quantity: this.quantity })
       .subscribe({
-        next: () => (this.cartMessage = 'Added to cart!'),
+        next: () => (this.cartMessage = 'Item added to your cart successfully!'),
         error: () => (this.cartMessage = 'Failed to add to cart.'),
       });
-    setTimeout(() => (this.cartMessage = ''), 3000);
+    setTimeout(() => (this.cartMessage = ''), 5000);
+  }
+
+  get isOutOfStock(): boolean {
+    return this.product ? this.product.count < 1 : true;
+  }
+
+  goToCart(): void {
+    this.router.navigate(['/cart']);
   }
 
   submitReview(): void {
@@ -110,10 +132,48 @@ export class ProductDetailComponent implements OnInit {
         this.newComment = '';
         this.newRating = 5;
         this.loadReviews();
+        setTimeout(() => (this.reviewSuccess = ''), 3000);
       },
       error: (err: any) => {
-        this.reviewError = err.error?.mess?.[0] ?? 'Could not submit review.';
+        this.reviewError = err.error?.mess?.[0] || err.error?.message || 'Could not submit review.';
       },
+    });
+  }
+
+  startEditReview(r: ReviewResponse): void {
+    this.editingReviewId = r.reviewId;
+    this.editRating = r.rating;
+    this.editComment = r.comment || '';
+    this.editError = '';
+  }
+
+  cancelEditReview(): void {
+    this.editingReviewId = null;
+  }
+
+  updateReview(): void {
+    if (!this.editingReviewId) return;
+    this.editError = '';
+    const req: CreateReviewRequest = {
+      rating: this.editRating,
+      comment: this.editComment,
+    };
+    this.reviewService.editReview(this.productId, this.editingReviewId, req).subscribe({
+      next: () => {
+        this.editingReviewId = null;
+        this.loadReviews();
+      },
+      error: (err: any) => {
+        this.editError = err.error?.mess?.[0] || err.error?.message || 'Failed to update review.';
+      }
+    });
+  }
+
+  deleteReview(reviewId: number): void {
+    if (!confirm('Are you sure you want to delete this review?')) return;
+    this.reviewService.deleteReview(this.productId, reviewId).subscribe({
+      next: () => this.loadReviews(),
+      error: () => alert('Failed to delete review')
     });
   }
 }

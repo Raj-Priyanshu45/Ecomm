@@ -1,0 +1,114 @@
+<div class="min-h-screen bg-slate-50 p-8">
+  <div class="max-w-6xl mx-auto">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+      <div>
+        <h1 class="text-3xl font-black text-slate-900">Delivery Agent Area</h1>
+        <p class="text-slate-500 mt-1">Manage last-mile delivery and returns</p>
+      </div>
+      <div class="flex gap-2 bg-white rounded-xl shadow-sm border border-slate-200 p-1">
+        @for (s of statusFilters; track s) {
+          <button (click)="filterStatus = s; loadOrders()"
+                  [class]="filterStatus === s ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'"
+                  class="px-4 py-2 rounded-lg text-sm font-semibold transition-all">
+            {{ s ? s.replace('_', ' ') : 'All' }}
+          </button>
+        }
+      </div>
+    </div>
+
+    @if (loading) {
+      <div class="flex justify-center items-center h-64">
+        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
+      </div>
+    } @else if (orders.length === 0) {
+      <div class="text-center py-24 bg-white rounded-3xl border border-slate-200 shadow-sm">
+        <span class="text-6xl mb-4 block">🚚</span>
+        <h3 class="text-xl font-bold text-slate-800">No Orders Found</h3>
+        <p class="text-slate-500 mt-2">There are no orders matching the selected status.</p>
+      </div>
+    } @else {
+      <div class="space-y-4">
+        @for (order of orders; track order.orderId) {
+          <div class="bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+            
+            <!-- Order Header -->
+            <div (click)="toggle(order.orderId)" class="p-5 flex items-center justify-between cursor-pointer bg-white">
+              <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center font-black text-indigo-600 bg-indigo-50 border border-indigo-100">
+                  #{{order.orderId}}
+                </div>
+                <div>
+                  <h3 class="font-bold text-slate-900">{{order.shippingName}}</h3>
+                  <p class="text-sm text-slate-500">{{order.shippingCity}}, {{order.shippingState}} - {{order.shippingPincode}}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-4">
+                <span [class]="statusClass(order.status)" class="px-3 py-1 text-xs font-bold rounded-full uppercase tracking-wider">
+                  {{order.status.replace('_', ' ')}}
+                </span>
+                <span class="font-black text-slate-900">₹{{order.totalAmount}}</span>
+                <svg [class]="expandedId === order.orderId ? 'rotate-180' : ''" class="w-5 h-5 text-slate-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+              </div>
+            </div>
+
+            <!-- Order Details (Expanded) -->
+            @if (expandedId === order.orderId) {
+              <div class="px-5 pb-5 pt-4 border-t border-slate-100 bg-slate-50/50">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  
+                  <!-- Items list -->
+                  <div>
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Order Items</h4>
+                    <div class="space-y-3">
+                      @for (item of order.items; track item.orderItemId) {
+                        <div class="flex justify-between items-center bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
+                          <div>
+                            <p class="font-semibold text-slate-800 text-sm">{{item.productName}}</p>
+                            @if (item.skuCode) { <p class="text-xs text-slate-500 font-mono">{{item.skuCode}}</p> }
+                          </div>
+                          <div class="text-right">
+                            <p class="text-sm font-bold text-slate-900">₹{{item.lineTotal}}</p>
+                            <p class="text-xs text-slate-500">Qty: {{item.quantity}}</p>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- Delivery Details & Actions -->
+                  <div>
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Delivery Details</h4>
+                    <div class="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 text-sm text-indigo-900 mb-4">
+                      <p class="font-semibold">{{order.shippingName}}</p>
+                      <p>{{order.shippingAddress}}</p>
+                      <p>{{order.shippingCity}}, {{order.shippingState}} {{order.shippingPincode}}</p>
+                      <p class="mt-2 font-mono font-medium">📞 {{order.shippingPhone}}</p>
+                    </div>
+
+                    @if (canUpdateStatus(order.status)) {
+                      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Update Delivery Status</label>
+                        <div class="flex gap-2">
+                          <select [(ngModel)]="statusUpdates[order.orderId]" class="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow font-medium text-slate-700">
+                            <option value="">Select next status...</option>
+                            @for (s of nextStatuses(order.status); track s) {
+                              <option [value]="s">{{s.replace('_', ' ')}}</option>
+                            }
+                          </select>
+                          <button (click)="updateStatus(order.orderId)" [disabled]="!statusUpdates[order.orderId] || updatingId === order.orderId"
+                                  class="px-5 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold shadow-sm shadow-indigo-600/20 hover:bg-indigo-700 disabled:opacity-50 transition-all active:scale-95">
+                            {{ updatingId === order.orderId ? 'Updating...' : 'Update' }}
+                          </button>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

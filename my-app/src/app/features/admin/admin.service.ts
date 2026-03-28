@@ -19,4 +19,12 @@ export class AdminService {
       adminNote: reason
     });
   }
+
+  getWarehouses() {
+    return this.http.get('/api/admin/warehouses');
+  }
+
+  createWarehouse(data: any) {
+    return this.http.post('/api/admin/warehouses', data);
+  }
 }

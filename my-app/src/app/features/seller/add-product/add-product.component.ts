@@ -2,7 +2,9 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { ProductService, CreateProductResponse } from '../services/product.service';
+import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 interface ImagePreview {
   file: File;
@@ -11,15 +13,25 @@ interface ImagePreview {
   size: string;
 }
 
+interface VariantEntry {
+  key: string;
+  value: string;
+  price: number;
+  quantity: number;
+  images: ImagePreview[];
+  primaryKey: number;
+}
+
 @Component({
   selector: 'app-add-product',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ConfirmDialogComponent],
   templateUrl: './add-product.component.html',
 })
 export class AddProductComponent {
-  // Step tracking
+  // Step tracking (1=details, 2=images, 3=variants, 4=variant images)
   currentStep = 1;
+  readonly totalSteps = 4;
 
   // Step 1 — Product details
   name = '';
@@ -28,21 +40,89 @@ export class AddProductComponent {
   quantity: number | null = null;
   tagsInput = '';
 
-  // Step 2 — Images
+  // Step 2 — Product Images (MANDATORY)
   images: ImagePreview[] = [];
   primaryIndex = 0;
   dragOver = false;
+
+  // Step 3 — Variants
+  variants: VariantEntry[] = [];
+  newVariantKey = '';
+  newVariantValue = '';
+  newVariantPrice = 0;
+  newVariantQuantity = 1;
+  showVariantForm = false;
 
   // State
   loading = false;
   success = false;
   error = '';
   createdProductId: number | null = null;
+  submittedVariantIds: number[] = [];
+  stepLabels = ['Details', 'Images', 'Variants', 'Finish'];
+
+  // Confirm Dialog State
+  showConfirmDialog = false;
+  confirmTitle = '';
+  confirmMessage = '';
+  confirmAction: (() => void) | null = null;
 
   constructor(
     private productService: ProductService,
+    private http: HttpClient,
     private router: Router
   ) {}
+
+  // ── Dialog Handlers ─────────────────────────────────
+
+  confirmDeleteImage(index: number) {
+    this.confirmTitle = 'Remove Image';
+    this.confirmMessage = 'Are you sure you want to remove this product image?';
+    this.confirmAction = () => {
+      URL.revokeObjectURL(this.images[index].url);
+      this.images.splice(index, 1);
+      if (this.primaryIndex >= this.images.length) {
+        this.primaryIndex = 0;
+      }
+    };
+    this.showConfirmDialog = true;
+  }
+
+  confirmDeleteVariant(index: number) {
+    this.confirmTitle = 'Remove Variant';
+    this.confirmMessage = `Are you sure you want to remove the variant "${this.variants[index].value}"?`;
+    this.confirmAction = () => {
+      this.variants[index].images.forEach(img => URL.revokeObjectURL(img.url));
+      this.variants.splice(index, 1);
+    };
+    this.showConfirmDialog = true;
+  }
+
+  confirmDeleteVariantImage(variant: VariantEntry, imgIndex: number) {
+    this.confirmTitle = 'Remove Variant Image';
+    this.confirmMessage = 'Are you sure you want to remove this variant image?';
+    this.confirmAction = () => {
+      URL.revokeObjectURL(variant.images[imgIndex].url);
+      variant.images.splice(imgIndex, 1);
+      if (variant.primaryKey >= variant.images.length) {
+        variant.primaryKey = 0;
+      }
+    };
+    this.showConfirmDialog = true;
+  }
+
+  executeConfirm() {
+    if (this.confirmAction) {
+      this.confirmAction();
+    }
+    this.showConfirmDialog = false;
+    this.confirmAction = null;
+  }
+
+  cancelConfirm() {
+    this.showConfirmDialog = false;
+    this.confirmAction = null;
+  }
 
   // ── Step 1: Create product ──────────────────────────
 
@@ -80,7 +160,7 @@ export class AddProductComponent {
       });
   }
 
-  // ── Step 2: Image handling ──────────────────────────
+  // ── Step 2: Image handling (MANDATORY) ──────────────
 
   onDragOver(event: DragEvent): void {
     event.preventDefault();
@@ -101,19 +181,19 @@ export class AddProductComponent {
 
     const files = event.dataTransfer?.files;
     if (files) {
-      this.addFiles(Array.from(files));
+      this.addFiles(Array.from(files), this.images);
     }
   }
 
   onFileSelect(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files) {
-      this.addFiles(Array.from(input.files));
+      this.addFiles(Array.from(input.files), this.images);
       input.value = '';
     }
   }
 
-  private addFiles(files: File[]): void {
+  private addFiles(files: File[], target: ImagePreview[], maxCount = 10): void {
     const allowed = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
     const maxSize = 5 * 1024 * 1024;
 
@@ -126,25 +206,17 @@ export class AddProductComponent {
         this.error = `"${file.name}" exceeds 5 MB limit.`;
         continue;
       }
-      if (this.images.length >= 10) {
-        this.error = 'Maximum 10 images allowed.';
+      if (target.length >= maxCount) {
+        this.error = `Maximum ${maxCount} images allowed.`;
         break;
       }
 
-      this.images.push({
+      target.push({
         file,
         url: URL.createObjectURL(file),
         name: file.name,
         size: this.formatSize(file.size),
       });
-    }
-  }
-
-  removeImage(index: number): void {
-    URL.revokeObjectURL(this.images[index].url);
-    this.images.splice(index, 1);
-    if (this.primaryIndex >= this.images.length) {
-      this.primaryIndex = 0;
     }
   }
 
@@ -158,11 +230,9 @@ export class AddProductComponent {
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   }
 
-  // ── Submit images ───────────────────────────────────
-
   submitImages(): void {
     if (this.images.length === 0) {
-      this.error = 'Please add at least one image.';
+      this.error = 'At least one product image is required.';
       return;
     }
     if (!this.createdProductId) {
@@ -180,8 +250,7 @@ export class AddProductComponent {
       .subscribe({
         next: () => {
           this.loading = false;
-          this.success = true;
-          setTimeout(() => this.router.navigate(['/']), 2000);
+          this.currentStep = 3;
         },
         error: (err) => {
           this.loading = false;
@@ -190,9 +259,82 @@ export class AddProductComponent {
       });
   }
 
-  // ── Skip images ─────────────────────────────────────
+  // ── Step 3: Variants ────────────────────────────────
 
-  skipImages(): void {
-    this.router.navigate(['/']);
+  addVariant(): void {
+    if (!this.newVariantKey.trim() || !this.newVariantValue.trim()) {
+      this.error = 'Variant key and value are required.';
+      return;
+    }
+    this.variants.push({
+      key: this.newVariantKey.trim(),
+      value: this.newVariantValue.trim(),
+      price: this.newVariantPrice,
+      quantity: this.newVariantQuantity,
+      images: [],
+      primaryKey: 0,
+    });
+    this.newVariantKey = '';
+    this.newVariantValue = '';
+    this.newVariantPrice = 0;
+    this.newVariantQuantity = 1;
+    this.showVariantForm = false;
+    this.error = '';
+  }
+
+  onVariantFileSelect(event: Event, variant: VariantEntry): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files) {
+      this.addFiles(Array.from(input.files), variant.images, 5);
+      input.value = '';
+    }
+  }
+
+  submitVariantsAndFinish(): void {
+    if (this.variants.length === 0) {
+      this.finishProduct();
+      return;
+    }
+
+    this.loading = true;
+    this.error = '';
+    this.submitNextVariant(0);
+  }
+
+  private submitNextVariant(index: number): void {
+    if (index >= this.variants.length) {
+      this.loading = false;
+      this.finishProduct();
+      return;
+    }
+
+    const v = this.variants[index];
+    const fd = new FormData();
+    fd.append('key', v.key);
+    fd.append('value', v.value);
+    fd.append('price', v.price.toString());
+    fd.append('quantity', v.quantity.toString());
+    fd.append('primaryKey', v.primaryKey.toString());
+    v.images.forEach(img => fd.append('images', img.file));
+
+    this.productService.addVariant(this.createdProductId!, fd).subscribe({
+      next: () => {
+        this.submitNextVariant(index + 1);
+      },
+      error: (err) => {
+        this.loading = false;
+        const msg = err?.error?.mess?.[0] || err?.error?.message || err?.message || 'Unknown error';
+        this.error = `Failed to add variant "${v.key}: ${v.value}" — ${msg}`;
+      }
+    });
+  }
+
+  skipVariants(): void {
+    this.finishProduct();
+  }
+
+  private finishProduct(): void {
+    this.success = true;
+    setTimeout(() => this.router.navigate(['/seller/products']), 2000);
   }
 }

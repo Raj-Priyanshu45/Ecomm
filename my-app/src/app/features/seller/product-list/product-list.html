@@ -1,0 +1,89 @@
+<div class="min-h-screen bg-[#0f172a] p-8 relative overflow-hidden text-gray-100">
+  
+  <!-- Animated Background Orbs -->
+  <div class="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+    <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-600/20 blur-[100px] mix-blend-screen animate-pulse-slow"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-fuchsia-600/20 blur-[120px] mix-blend-screen animate-pulse-slow" style="animation-delay: 2s;"></div>
+  </div>
+
+  <div class="max-w-7xl mx-auto z-10 animate-fade-in text-gray-100">
+    <div class="flex justify-between items-center mb-8">
+      <div>
+        <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-fuchsia-400">My Products</h1>
+        <p class="text-gray-400 mt-2">Manage your listings, images, and inventory.</p>
+      </div>
+      <button routerLink="/seller/add-product" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2 px-4 rounded-xl shadow-lg transition-transform hover:scale-105 active:scale-95 flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Add Product
+      </button>
+    </div>
+
+    <!-- Glassmorphism Container for Table -->
+    <div class="bg-gray-900/40 backdrop-blur-xl border border-gray-700/50 rounded-2xl shadow-2xl p-6 relative overflow-hidden">
+      
+      <!-- Loading State -->
+      <div *ngIf="loading" class="flex justify-center items-center h-64">
+        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-fuchsia-500"></div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!loading && products.length === 0" class="flex flex-col items-center justify-center p-12 text-center text-gray-400">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 text-gray-600 mb-6 drop-shadow-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        </svg>
+        <h2 class="text-2xl font-bold text-gray-200 mb-2">No Products Found</h2>
+        <p class="mb-6">You haven't added any products to your store yet.</p>
+        <button routerLink="/seller/add-product" class="text-fuchsia-400 hover:text-fuchsia-300 font-semibold underline underline-offset-4">Create your first product</button>
+      </div>
+
+      <!-- Product Table -->
+      <div *ngIf="!loading && products.length > 0" class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-gray-700/50">
+              <th class="py-4 px-6 text-sm font-semibold text-gray-300 uppercase tracking-wider bg-gray-800/20 rounded-tl-xl">Product</th>
+              <th class="py-4 px-6 text-sm font-semibold text-gray-300 uppercase tracking-wider bg-gray-800/20">Price</th>
+              <th class="py-4 px-6 text-sm font-semibold text-gray-300 uppercase tracking-wider bg-gray-800/20">Stock</th>
+              <th class="py-4 px-6 text-sm font-semibold text-gray-300 uppercase tracking-wider bg-gray-800/20 rounded-tr-xl text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-800/50">
+            <tr *ngFor="let product of products" class="hover:bg-gray-800/30 transition-colors group">
+              <td class="py-5 px-6 flex items-center">
+                <div class="h-16 w-16 flex-shrink-0 mr-4 rounded-xl overflow-hidden bg-gray-800 flex items-center justify-center shadow-inner border border-gray-700/50">
+                  <img *ngIf="product.imageUrl" [src]="product.imageUrl" alt="{{product.name}}" class="h-full w-full object-cover">
+                  <span *ngIf="!product.imageUrl" class="text-gray-500 text-xs text-center p-2">No Image</span>
+                </div>
+                <div>
+                  <div class="text-lg font-bold text-gray-100 group-hover:text-indigo-400 transition-colors">{{product.name}}</div>
+                  <div class="text-sm text-gray-500 line-clamp-1 mt-1">{{product.description}}</div>
+                </div>
+              </td>
+              <td class="py-5 px-6 text-gray-200 font-medium">₹{{product.price}}</td>
+              <td class="py-5 px-6">
+                <span class="text-gray-200 font-medium">{{product.quantity}}</span>
+              </td>
+              <td class="py-5 px-6 text-right">
+                <div class="flex items-center justify-end gap-2">
+                  <button [routerLink]="['/seller/edit-product', product.id]" class="p-2 bg-fuchsia-500/10 hover:bg-fuchsia-500/20 text-fuchsia-400 rounded-lg transition-colors border border-fuchsia-500/20 shadow-sm" title="Edit Details">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
+                  <!-- Delete -->
+                  <button (click)="deleteProduct(product.id)" class="p-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-lg transition-colors border border-rose-500/20 shadow-sm" title="Delete Product">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

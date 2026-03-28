@@ -29,6 +29,8 @@ export interface SingleProductResponse {
   name: string;
   description: string;
   sellerId: string;
+  price: number;
+  count: number;
   addedAt: string;
   modifiedAt: string;
   tags: Tags[];

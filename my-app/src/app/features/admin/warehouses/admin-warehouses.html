@@ -1,0 +1,113 @@
+<div class="min-h-screen bg-slate-50 p-8">
+  <div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+      <div>
+        <h1 class="text-3xl font-black text-slate-900">Warehouse Management</h1>
+        <p class="text-slate-500 mt-1">Manage physical locations for vendor inventory</p>
+      </div>
+      <button (click)="showAddForm = !showAddForm"
+              class="px-5 py-2.5 bg-indigo-600 text-white font-bold rounded-xl shadow-sm hover:bg-indigo-700 transition-colors flex items-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        {{ showAddForm ? 'Cancel' : 'Add Warehouse' }}
+      </button>
+    </div>
+
+    <!-- Create Form -->
+    @if (showAddForm) {
+      <div class="bg-white border border-indigo-100 rounded-2xl shadow-lg p-6 mb-8 animate-[slide-down_0.3s_ease-out]">
+        <h2 class="text-xl font-bold text-slate-800 mb-5">New Warehouse Registration</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+          <div class="md:col-span-2">
+            <label class="block text-sm font-bold text-slate-700 mb-1.5">Warehouse Name</label>
+            <input [(ngModel)]="name" placeholder="e.g. North India Main Hub" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow">
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-sm font-bold text-slate-700 mb-1.5">Street Address</label>
+            <input [(ngModel)]="addressLine" placeholder="Building, Street, Area" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow">
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-slate-700 mb-1.5">City</label>
+            <input [(ngModel)]="city" placeholder="e.g. New Delhi" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow">
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-slate-700 mb-1.5">State</label>
+            <select [(ngModel)]="state" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow">
+              <option value="">Select State</option>
+              @for (st of indianStates; track st) {
+                <option [value]="st">{{st}}</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-slate-700 mb-1.5">Pincode</label>
+            <input [(ngModel)]="pincode" placeholder="6 digits" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow">
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-slate-700 mb-1.5">Contact Number</label>
+            <input [(ngModel)]="contactNumber" placeholder="+91..." class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow">
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-sm font-bold text-slate-700 mb-1.5">Capacity (in sq. ft. or units)</label>
+            <input type="number" [(ngModel)]="capacity" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow">
+          </div>
+        </div>
+        <div class="flex justify-end pt-4 border-t border-slate-100">
+          <button (click)="createWarehouse()" [disabled]="submitting || !name || !state || !city"
+                  class="px-8 py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-sm hover:bg-indigo-700 disabled:opacity-50 transition-all active:scale-95 flex items-center gap-2">
+             @if (submitting) {
+               <svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+               Saving...
+             } @else {
+               Create Warehouse
+             }
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Warehouse List -->
+    @if (loading) {
+      <div class="flex justify-center py-20">
+        <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-indigo-600"></div>
+      </div>
+    } @else if (warehouses.length === 0) {
+      <div class="bg-white border border-slate-200 rounded-3xl p-16 text-center shadow-sm">
+        <span class="text-6xl block mb-4">🏭</span>
+        <h3 class="text-xl font-bold text-slate-800">No Warehouses Registered</h3>
+        <p class="text-slate-500 mt-2">Add your first warehouse to start assigning vendors.</p>
+      </div>
+    } @else {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @for (w of warehouses; track w.id) {
+          <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+            <div class="absolute top-0 right-0 p-4">
+              <span [class]="w.active ? 'bg-green-100 text-green-700 border-green-200' : 'bg-rose-100 text-rose-700 border-rose-200'" 
+                    class="px-2.5 py-1 text-xs font-bold rounded-md border uppercase tracking-wider">
+                {{w.active ? 'Active' : 'Inactive'}}
+              </span>
+            </div>
+            
+            <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center mb-4">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+            </div>
+            
+            <h3 class="text-lg font-bold text-slate-800 pr-16 leading-tight">{{w.name}}</h3>
+            <p class="text-sm font-medium text-slate-500 mt-1 mb-4">{{w.city}}, {{w.state}}</p>
+            
+            <div class="space-y-2 pt-4 border-t border-slate-100 text-sm">
+              <div class="flex justify-between">
+                <span class="text-slate-500">Capacity:</span>
+                <span class="font-semibold text-slate-800">{{w.capacity | number}}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-500">Contact:</span>
+                <span class="font-semibold text-slate-800">{{w.contactNumber || 'N/A'}}</span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

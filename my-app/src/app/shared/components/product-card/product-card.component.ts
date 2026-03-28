@@ -60,12 +60,12 @@ import { StarRatingComponent } from '../star-rating/star-rating.component';
         </div>
 
         <!-- Tags -->
-        @if (product.tags?.length) {
+        @if (product.tags.length) {
           <div class="flex flex-wrap gap-1 mt-2">
             @for (tag of product.tags.slice(0, 3); track tag.id) {
-              <span class="text-xs px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-full">
+              <button (click)="goToTag($event, tag.name)" class="text-xs px-2 py-0.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-full transition-colors">
                 {{ tag.name }}
-              </span>
+              </button>
             }
           </div>
         }
@@ -87,6 +87,12 @@ export class ProductCardComponent {
   onAddToCart(event: Event): void {
     event.stopPropagation();
     this.addToCart.emit(this.product);
+  }
+
+  goToTag(event: Event, tag: string): void {
+    event.stopPropagation();
+    // Convert tag name to slug-like format if necessary, or just use the name
+    this.router.navigate(['/products/tag', tag.toLowerCase()]);
   }
 
   handleImgError(event: Event): void {
