@@ -52,16 +52,36 @@ public class SecurityConfig {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
 
         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
-            Map<String, Object> realmAccess = jwt.getClaim("realm_access");
+            List<String> allRoles = new java.util.ArrayList<>();
 
-            if (realmAccess == null || realmAccess.get("roles") == null) {
+            // 1) Extract client roles from resource_access (Keycloak client-level roles)
+            Map<String, Object> resourceAccess = jwt.getClaim("resource_access");
+            if (resourceAccess != null) {
+                // Check "back-end" client roles
+                Map<String, Object> backendAccess = (Map<String, Object>) resourceAccess.get("back-end");
+                if (backendAccess != null && backendAccess.get("roles") != null) {
+                    allRoles.addAll((List<String>) backendAccess.get("roles"));
+                }
+                // Also check "angular-client" client roles
+                Map<String, Object> angularAccess = (Map<String, Object>) resourceAccess.get("angular-client");
+                if (angularAccess != null && angularAccess.get("roles") != null) {
+                    allRoles.addAll((List<String>) angularAccess.get("roles"));
+                }
+            }
+
+            // 2) Fallback: also include realm_access roles
+            Map<String, Object> realmAccess = jwt.getClaim("realm_access");
+            if (realmAccess != null && realmAccess.get("roles") != null) {
+                allRoles.addAll((List<String>) realmAccess.get("roles"));
+            }
+
+            if (allRoles.isEmpty()) {
                 return Collections.emptyList();
             }
 
-            List<String> roles = (List<String>) realmAccess.get("roles");
-
-            return roles.stream()
+            return allRoles.stream()
                 .map(role -> new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()))
+                .distinct()
                 .collect(Collectors.toList());
         });
 

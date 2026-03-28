@@ -13,6 +13,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.ecommerce.second.Enum.Role;
+
 import com.ecommerce.second.dto.requestDTO.CreateProducts;
 import com.ecommerce.second.dto.requestDTO.ModifyProducts;
 import com.ecommerce.second.dto.responseDTO.AddProduct;
@@ -46,8 +48,35 @@ public class ProductService {
     private final FileStorageService fileService;
 
     public User getCurrentUser(Authentication authentication) {
-        return userRepo.findByKeyCloakId(authentication.getName())
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        String keyCloakId = authentication.getName();
+        return userRepo.findByKeyCloakId(keyCloakId)
+                .orElseGet(() -> {
+                    // Auto-register user from Keycloak JWT on first access
+                    Role role = resolveRoleFromAuth(authentication);
+
+                    String email = null;
+                    if (authentication.getPrincipal() instanceof org.springframework.security.oauth2.jwt.Jwt jwt) {
+                        email = jwt.getClaimAsString("email");
+                    }
+
+                    User newUser = User.builder()
+                            .keyCloakId(keyCloakId)
+                            .role(role)
+                            .email(email)
+                            .build();
+
+                    logger.info("Auto-registered user: keyCloakId={}, role={}, email={}", keyCloakId, role, email);
+                    return userRepo.save(newUser);
+                });
+    }
+
+    private Role resolveRoleFromAuth(Authentication authentication) {
+        // Check granted authorities in priority order
+        if (authCheck(authentication, "admin"))   return Role.ADMIN;
+        if (authCheck(authentication, "seller"))   return Role.SELLER;
+        if (authCheck(authentication, "vendor"))   return Role.VENDOR;
+        if (authCheck(authentication, "support"))  return Role.SUPPORT;
+        return Role.CUSTOMER; // default
     }
 
     public Products getProducts(int id) {
@@ -88,6 +117,7 @@ public class ProductService {
                 Products.builder()
                         .name(request.getName())
                         .price(request.getPrice())
+                        .quantity(request.getQuantity())
                         .description(request.getDescription())
                         .seller(user)
                         .isDel(false)
@@ -119,6 +149,7 @@ public class ProductService {
         product.setName(request.getName());
         product.setDescription(request.getDescription());
         product.setPrice(request.getPrice());
+        product.setQuantity(request.getQuantity());
         product.setTags(tags);
 
         productRepo.save(product);

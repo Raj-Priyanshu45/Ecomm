@@ -26,5 +26,8 @@ public class CreateProducts {
     private BigDecimal price;
 
     @NotNull
+    private Integer quantity;
+
+    @NotNull
     private List<String> tags;
 }

@@ -66,6 +66,9 @@ public class Products {
     @NotNull
     private BigDecimal price;
 
+    @NotNull
+    private Integer quantity;
+
     @Column(name = "is_del")
     @Builder.Default
     private boolean isDel = false;
