@@ -121,7 +121,7 @@ export class ProductDetailComponent implements OnInit {
         alert('Please select a valid variant combination.');
         return;
       }
-    } else if (this.product?.variants && Object.keys(this.product.variants).length > 0) {
+    } else if (this.product?.varients && Object.keys(this.product.varients).length > 0) {
       alert('Please select a variant option.');
       return;
     }
