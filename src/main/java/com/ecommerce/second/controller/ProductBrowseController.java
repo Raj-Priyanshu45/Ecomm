@@ -3,7 +3,9 @@ package com.ecommerce.second.controller;
 import com.ecommerce.second.dto.responseDTO.AllProductResponse;
 import com.ecommerce.second.dto.responseDTO.ApiResponse;
 import com.ecommerce.second.dto.responseDTO.SingleProductResponse;
+import com.ecommerce.second.dto.responseDTO.VariantResponse;
 import com.ecommerce.second.service.ProductBrowseService;
+import com.ecommerce.second.service.VariantService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 public class ProductBrowseController {
 
     private final ProductBrowseService productBrowseService;
+    private final VariantService variantService;
 
     /**
      * GET /api/browse/products?page=0&size=20&sortBy=updatedAt&direction=desc
@@ -43,6 +46,14 @@ public class ProductBrowseController {
     @GetMapping("/{productId}")
     public ResponseEntity<SingleProductResponse> getProductDetail(@PathVariable int productId) {
         return ResponseEntity.ok(productBrowseService.getProductDetail(productId));
+    }
+
+    /**
+     * GET /api/browse/products/{productId}/variants
+     */
+    @GetMapping("/{productId}/variants")
+    public ResponseEntity<java.util.List<VariantResponse>> getVariants(@PathVariable int productId) {
+        return ResponseEntity.ok(variantService.getVariants(productId));
     }
 
     /**

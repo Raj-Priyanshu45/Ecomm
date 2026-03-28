@@ -19,4 +19,7 @@ public interface VarientAttrRepo extends JpaRepository<VariantAttribute, Integer
 
     /** All values for a specific attribute key on a product (e.g. all "color" values) */
     List<VariantAttribute> findByProduct_IdAndName(int productId, String name);
+
+    /** Attributes matching a specific SKU code */
+    List<VariantAttribute> findBySkuCode(String skuCode);
 }
