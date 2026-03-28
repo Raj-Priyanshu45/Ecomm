@@ -120,29 +120,36 @@ public class VariantService {
      * Fetch all variants for a product with full details (prices, stock, images).
      */
     public List<VariantResponse> getVariants(int productId) {
-        List<ProductVariant> variants = productVariantsRepo.findByProductId(productId);
-        return variants.stream().map(v -> {
-            VariantAttribute attr = variantAttrRepo.findBySkuCode(v.getSkuCode())
-                    .stream().findFirst().orElse(null);
-            Inventory inv = inventoryRepo.findBySkuCode(v.getSkuCode()).orElse(null);
+    List<ProductVariant> variants = productVariantsRepo.findByProductId(productId);
 
-            return VariantResponse.builder()
-                    .id(v.getId())
-                    .skuCode(v.getSkuCode())
-                    .price(v.getPrice())
-                    .key(attr != null ? attr.getName() : null)
-                    .value(attr != null ? attr.getValue() : null)
-                    .quantity(inv != null ? inv.getQuantity() : 0)
-                    .images(v.getImages() != null ? v.getImages().stream().map(img -> 
-                            VariantResponse.VariantImageResponse.builder()
-                                    .id(img.getId())
-                                    .imageUrl(img.getImageUrl())
-                                    .primary(img.isPrimary())
-                                    .build()
-                    ).toList() : List.of())
-                    .build();
-        }).toList();
-    }
+    return variants.stream()
+            .<VariantResponse>map(v -> {                          // ← explicit type witness
+                VariantAttribute attr = variantAttrRepo.findBySkuCode(v.getSkuCode())
+                        .stream().findFirst().orElse(null);
+                Inventory inv = inventoryRepo.findBySkuCode(v.getSkuCode()).orElse(null);
+
+                List<VariantResponse.VariantImageResponse> imageResponses = v.getImages() != null
+                        ? v.getImages().stream()
+                                .<VariantResponse.VariantImageResponse>map(img ->  // ← explicit type witness
+                                        VariantResponse.VariantImageResponse.builder()
+                                                .id(img.getId())
+                                                .imageUrl(img.getImageUrl())
+                                                .primary(img.isPrimaryImage())     // ← was isPrimary()
+                                                .build()
+                                ).toList()
+                        : List.<VariantResponse.VariantImageResponse>of();         // ← typed List.of()
+
+                return VariantResponse.builder()
+                        .id(v.getId())
+                        .skuCode(v.getSkuCode())
+                        .price(v.getPrice())
+                        .key(attr != null ? attr.getName() : null)
+                        .value(attr != null ? attr.getValue() : null)
+                        .quantity(inv != null ? inv.getQuantity() : 0)
+                        .images(imageResponses)
+                        .build();
+            }).toList();
+}
 
     // ─────────────────────────────────────────────────────────────
 

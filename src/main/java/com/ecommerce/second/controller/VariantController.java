@@ -1,11 +1,14 @@
 package com.ecommerce.second.controller;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import static org.springframework.http.ResponseEntity.ok;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +24,7 @@ import com.ecommerce.second.dto.requestDTO.UpdateVariantPriceRequest;
 import com.ecommerce.second.dto.requestDTO.UpdateVariantStockRequest;
 import com.ecommerce.second.dto.requestDTO.VarientRequest;
 import com.ecommerce.second.dto.responseDTO.Response;
+import com.ecommerce.second.dto.responseDTO.VariantResponse;
 import com.ecommerce.second.service.VariantService;
 
 import jakarta.validation.Valid;
@@ -162,5 +166,13 @@ public class VariantController {
                 request.getOldImageId(), request.getNewImageId(),
                 variantId, productId, authentication);
         return ResponseEntity.ok(new Response("Primary image updated successfully"));
+    }
+
+    @GetMapping
+    @PreAuthorize("hasRole('SELLER') or hasRole('ADMIN')")
+    public ResponseEntity<List<VariantResponse>> getVariants(
+            @PathVariable int productId,
+            Authentication authentication) {
+        return ok(variantService.getVariants(productId));
     }
 }
