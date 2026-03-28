@@ -40,4 +40,7 @@ public class User {
     private Role role;
 
     private String email;
+    
+    // Store the Name/Username from Keycloak
+    private String name;
 }

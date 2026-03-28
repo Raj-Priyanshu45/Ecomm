@@ -19,6 +19,7 @@ import com.ecommerce.second.dto.requestDTO.CreateProducts;
 import com.ecommerce.second.dto.requestDTO.ModifyProducts;
 import com.ecommerce.second.dto.responseDTO.AddProduct;
 import com.ecommerce.second.dto.responseDTO.ChangeImageGETResponse;
+import com.ecommerce.second.dto.responseDTO.ImageDTO;
 import com.ecommerce.second.exceptionHandling.AccessDeniedException;
 import com.ecommerce.second.exceptionHandling.ImageNotFoundException;
 import com.ecommerce.second.exceptionHandling.ProductNotFoundException;
@@ -305,17 +306,17 @@ return savedUrls;
             throw new ImageNotFoundException("No images found for this product");
         }
 
-        List<String> urls = new ArrayList<>();
+        List<ImageDTO> dtoList = new ArrayList<>();
         String primaryUrl = "Not Assigned";
 
         for (ProductImages img : imageList) {
-            urls.add(img.getImageUrl());
+            dtoList.add(new ImageDTO(img.getId(), img.getImageUrl(), img.isPrimaryImage()));
             if (img.isPrimaryImage()) {
                 primaryUrl = img.getImageUrl();
             }
         }
 
-        return new ChangeImageGETResponse(urls, imageList.size(), primaryUrl);
+        return new ChangeImageGETResponse(dtoList, imageList.size(), primaryUrl);
     }
 
     @Transactional

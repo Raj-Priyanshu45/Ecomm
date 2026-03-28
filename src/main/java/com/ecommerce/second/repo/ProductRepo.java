@@ -17,4 +17,6 @@ public interface ProductRepo extends JpaRepository<Products, Integer> {
     Page<Products> findByTags_Slug(String slug, Pageable pageable);
 
     Page<Products> findByNameContainingIgnoreCase(String q, Pageable pageable);
+
+    Page<Products> findBySeller_Id(int sellerId, Pageable pageable);
 }

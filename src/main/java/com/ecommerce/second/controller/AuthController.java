@@ -73,8 +73,9 @@ public class AuthController {
             return ResponseEntity.ok(new Response("Already registered — welcome back!"));
         }
 
-        // Extract email from JWT claims
+        // Extract email and name from JWT claims
         String email = extractEmail(authentication);
+        String name = extractName(authentication);
 
         // Resolve the primary role from Keycloak roles
         Role role = resolveRole(authentication);
@@ -82,6 +83,7 @@ public class AuthController {
         User user = userRepo.save(User.builder()
                 .keyCloakId(keycloakId)
                 .email(email)
+                .name(name)
                 .role(role)
                 .build());
 
@@ -137,10 +139,28 @@ public class AuthController {
     private String extractEmail(Authentication authentication) {
         try {
             if (authentication.getPrincipal() instanceof Jwt jwt) {
-                return jwt.getClaim("email");
+                return jwt.getClaimAsString("email");
             }
         } catch (Exception e) {
             log.warn("Could not extract email from JWT: {}", e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Pulls the name or preferred_username claim from the JWT.
+     */
+    private String extractName(Authentication authentication) {
+        try {
+            if (authentication.getPrincipal() instanceof Jwt jwt) {
+                String name = jwt.getClaimAsString("name");
+                if (name == null || name.isBlank()) {
+                    name = jwt.getClaimAsString("preferred_username");
+                }
+                return name;
+            }
+        } catch (Exception e) {
+            log.warn("Could not extract name from JWT: {}", e.getMessage());
         }
         return null;
     }

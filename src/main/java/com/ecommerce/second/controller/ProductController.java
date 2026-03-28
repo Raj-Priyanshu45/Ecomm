@@ -20,7 +20,9 @@ import com.ecommerce.second.dto.requestDTO.CreateProducts;
 import com.ecommerce.second.dto.requestDTO.ModifyProducts;
 import com.ecommerce.second.dto.requestDTO.SwapPrimaryImageRequest;
 import com.ecommerce.second.dto.responseDTO.Response;
+import com.ecommerce.second.service.ProductBrowseService;
 import com.ecommerce.second.service.ProductService;
+import com.ecommerce.second.model.User;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -57,6 +59,25 @@ import lombok.RequiredArgsConstructor;
 public class ProductController {
 
     private final ProductService productService;
+    private final ProductBrowseService productBrowseService;
+
+    // ─────────────────────────────────────────────────────────────
+    // Product CRUD
+    // ─────────────────────────────────────────────────────────────
+
+    /**
+     * GET /api/products
+     * Fetch products belonging to the authenticated seller
+     */
+    @GetMapping
+    public ResponseEntity<?> getSellerProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            Authentication authentication) {
+        
+        User user = productService.getCurrentUser(authentication);
+        return ResponseEntity.ok(productBrowseService.getSellerProducts(user.getId(), page, size));
+    }
 
     // ─────────────────────────────────────────────────────────────
     // Product CRUD

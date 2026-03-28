@@ -93,10 +93,18 @@ public class ProductBrowseService {
         }
 
 
+        // Use name if available, fallback to email or generic "Seller"
+        String sellerName = product.getSeller().getName();
+        if (sellerName == null || sellerName.isBlank()) {
+            sellerName = product.getSeller().getEmail() != null ? product.getSeller().getEmail() : "Seller";
+        }
+
         return new SingleProductResponse(
                 product.getName(),
                 product.getDescription(),
-                product.getSeller().getKeyCloakId(),
+                sellerName,
+                product.getPrice(),
+                product.getQuantity(),
                 product.getCreatedAt(),
                 product.getUpdatedAt(),
                 new ArrayList<>(product.getTags()),
@@ -124,6 +132,16 @@ public class ProductBrowseService {
         }
         Pageable pageable = PageRequest.of(page, size, Sort.by("updatedAt").descending());
         Page<Products> result = productRepo.findByNameContainingIgnoreCase(q.trim(), pageable);
+        return toApiResponse(result);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Seller's own products
+    // ─────────────────────────────────────────────────────────────
+
+    public ApiResponse<AllProductResponse> getSellerProducts(int sellerId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("updatedAt").descending());
+        Page<Products> result = productRepo.findBySeller_Id(sellerId, pageable);
         return toApiResponse(result);
     }
 
