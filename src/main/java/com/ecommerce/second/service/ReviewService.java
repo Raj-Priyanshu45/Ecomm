@@ -8,7 +8,7 @@ import com.ecommerce.second.exceptionHandling.UserNotFoundException;
 import com.ecommerce.second.model.Products;
 import com.ecommerce.second.model.Review;
 import com.ecommerce.second.model.User;
-import com.ecommerce.second.repo.OrderItemRepo;
+import com.ecommerce.second.repo.OrderRepo;
 import com.ecommerce.second.repo.ProductRepo;
 import com.ecommerce.second.repo.ReviewRepo;
 import com.ecommerce.second.repo.UserRepo;
@@ -32,7 +32,7 @@ public class ReviewService {
     private final ReviewRepo reviewRepo;
     private final ProductRepo productRepo;
     private final UserRepo userRepo;
-    private final OrderItemRepo orderItemRepo;
+    private final OrderRepo orderRepo;
 
     // ─────────────────────────────────────────────────────────────
     // Submit a review
@@ -48,17 +48,14 @@ public class ReviewService {
         Products product = productRepo.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException("Product not found: " + productId));
 
-        // Guard: customer must have a delivered order containing this product
-        boolean hasPurchased = orderItemRepo.findBySellerKeycloakId(keycloakId).stream()
-                .anyMatch(oi -> oi.getProduct().getId() == productId);
-        // Note: we check order items; in a stricter version filter by DELIVERED status too
-        if (!hasPurchased) {
-            throw new AccessDeniedException("You can only review products you have purchased");
-        }
+        // Guard: Admin can review unconditionally. Customers must have a delivered order containing this product.
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
-        // Guard: one review per product per user
-        if (reviewRepo.existsByProductIdAndUserId(productId, user.getId())) {
-            throw new IllegalArgumentException("You have already reviewed this product");
+        boolean hasPurchased = orderRepo.hasUserPurchasedProduct(keycloakId, productId);
+        
+        if (!isAdmin && !hasPurchased) {
+            throw new AccessDeniedException("You can only review products you have purchased and received");
         }
 
         Review review = reviewRepo.save(Review.builder()
