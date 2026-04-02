@@ -25,7 +25,10 @@ public class SecurityConfig {
 
     private final String[] freeUrl = {
         "/api/browse/**",
-        "/uploads/**"
+        "/uploads/**",
+        "/v3/api-docs/**",
+        "/swagger-ui/**",
+        "/swagger-ui.html"
     };
 
     @Bean

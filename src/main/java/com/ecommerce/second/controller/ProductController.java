@@ -22,6 +22,9 @@ import com.ecommerce.second.dto.requestDTO.SwapPrimaryImageRequest;
 import com.ecommerce.second.dto.responseDTO.Response;
 import com.ecommerce.second.service.ProductBrowseService;
 import com.ecommerce.second.service.ProductService;
+
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import com.ecommerce.second.model.User;
 
 import jakarta.validation.Valid;
@@ -55,6 +58,7 @@ import lombok.RequiredArgsConstructor;
  */
 @RestController
 @RequiredArgsConstructor
+@SecurityRequirement(name="keycloak")
 @RequestMapping("/api/products")
 public class ProductController {
 
