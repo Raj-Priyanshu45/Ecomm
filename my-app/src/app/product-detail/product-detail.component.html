@@ -37,17 +37,41 @@
       <!-- Info -->
       <div class="space-y-5">
         <div>
-          <h1 class="text-3xl font-black text-gray-900">{{ product.name }}</h1>
-          <p class="text-sm text-gray-400 mt-1">Sold by: {{ product.sellerId }}</p>
-          <div class="mt-3">
+          <h1 class="text-3xl font-black text-gray-900 leading-tight mb-2">{{ product.name }}</h1>
+          
+          <div class="flex items-center gap-3 mb-4">
+            <app-star-rating [rating]="product.rating || 0" [showCount]="false"></app-star-rating>
+            <span class="text-sm font-medium text-gray-500">
+              {{ product.reviewCount || 0 }} Reviews
+            </span>
+            <span class="text-gray-300">•</span>
+            <p class="text-sm text-gray-500">Sold by: <span class="font-semibold text-gray-900">{{ product.sellerId }}</span></p>
+          </div>
+          
+          <div class="mb-5 flex items-baseline gap-3 flex-wrap">
+             @if (product.discount && product.discount > 0) {
+               <div class="flex flex-col">
+                 <span class="text-sm text-gray-400 line-through">{{ product.price | currency:'INR':'symbol':'1.0-0' }}</span>
+                 <div class="flex items-center gap-3">
+                   <span class="text-4xl font-extrabold text-gray-900">{{ discountedPrice | currency:'INR':'symbol':'1.0-0' }}</span>
+                   <span class="text-sm font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-100">{{ product.discount }}% OFF</span>
+                 </div>
+               </div>
+             } @else {
+               <span class="text-4xl font-extrabold text-gray-900">{{ product.price | currency:'INR':'symbol':'1.0-0' }}</span>
+             }
+             <span class="text-sm font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">Free Shipping</span>
+          </div>
+
+          <div class="mb-6">
             @if (!isOutOfStock) {
-              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                In Stock ({{ product.count }} available)
+              <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                In Stock
               </span>
             } @else {
-              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-600 border border-rose-200">
-                <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+              <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-700 border border-rose-100">
+                <span class="w-2 h-2 rounded-full bg-rose-500"></span>
                 Out of Stock
               </span>
             }

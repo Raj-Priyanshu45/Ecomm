@@ -10,6 +10,7 @@ export interface AllProductResponse {
   shortDesc: string;
   imageUrl: string;
   price: number;
+  discount?: number;
   inStock: boolean;
   tags: Tags[];
   rating: number;
@@ -26,16 +27,21 @@ export interface ApiResponse<T> {
 }
 
 export interface SingleProductResponse {
+  id: number;
   name: string;
   description: string;
   sellerId: string;
   price: number;
+  discount?: number;
   count: number;
   addedAt: string;
   modifiedAt: string;
   tags: Tags[];
   imageUrl: string[];
   varients: { [key: string]: string[] };
+  rating: number;
+  reviewCount: number;
+  inStock: boolean;
 }
 
 export interface CartItemResponse {

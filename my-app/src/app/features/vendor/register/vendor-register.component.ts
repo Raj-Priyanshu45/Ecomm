@@ -337,6 +337,7 @@ export class VendorRegisterComponent implements OnInit {
     this.http.get<VendorProfile>(`${this.base}/api/vendor/me`).subscribe({
       next: (profile) => {
         this.existingProfile = profile;
+        localStorage.setItem('hasVendorProfile', 'true');
         this.loading = false;
       },
       error: (err) => {
@@ -376,6 +377,7 @@ export class VendorRegisterComponent implements OnInit {
     this.http.post<VendorProfile>(`${this.base}/api/vendor/register`, this.form).subscribe({
       next: (profile) => {
         this.existingProfile = profile;
+        localStorage.setItem('hasVendorProfile', 'true');
         this.submitting = false;
       },
       error: (err) => {
@@ -384,7 +386,10 @@ export class VendorRegisterComponent implements OnInit {
           this.error = err.error?.mess?.[0] ?? 'You have already submitted an application.';
           // Also try to load their profile
           this.http.get<VendorProfile>(`${this.base}/api/vendor/me`).subscribe({
-            next: (p) => { this.existingProfile = p; },
+            next: (p) => { 
+                this.existingProfile = p; 
+                localStorage.setItem('hasVendorProfile', 'true');
+            },
             error: () => {},
           });
         } else {

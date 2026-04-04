@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { KeyValuePipe, NgClass } from '@angular/common';
+import { KeyValuePipe, NgClass, CurrencyPipe } from '@angular/common';
 import { OidcSecurityService } from 'angular-auth-oidc-client';
 import { ProductService } from '../services/product.service';
 import { CartService } from '../features/cart/cart.service';
@@ -12,7 +12,7 @@ import { StarRatingComponent } from '../shared/components/star-rating/star-ratin
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [FormsModule, StarRatingComponent, NgClass, KeyValuePipe, RouterModule],
+  imports: [FormsModule, StarRatingComponent, NgClass, KeyValuePipe, RouterModule, CurrencyPipe],
   templateUrl: './product-detail.component.html',
 })
 export class ProductDetailComponent implements OnInit {
@@ -136,7 +136,13 @@ export class ProductDetailComponent implements OnInit {
   }
 
   get isOutOfStock(): boolean {
-    return this.product ? this.product.count < 1 : true;
+    return this.product ? !this.product.inStock : true;
+  }
+
+  get discountedPrice(): number {
+    if (!this.product) return 0;
+    const disc = this.product.discount ?? 0;
+    return disc > 0 ? this.product.price * (1 - disc / 100) : this.product.price;
   }
 
   goToCart(): void {

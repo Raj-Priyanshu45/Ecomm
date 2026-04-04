@@ -58,6 +58,10 @@ export class HeaderComponent implements OnInit {
     });
   }
 
+  get hasVendorProfileLocal(): boolean {
+    return typeof localStorage !== 'undefined' && localStorage.getItem('hasVendorProfile') === 'true';
+  }
+
   hasRole(role: string): boolean {
     return this.roles.includes(role.toUpperCase());
   }

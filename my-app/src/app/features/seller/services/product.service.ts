@@ -8,6 +8,7 @@ export interface CreateProductRequest {
   price: number;
   quantity: number;
   tags: string[];
+  discount?: number | null;
 }
 
 export interface CreateProductResponse {

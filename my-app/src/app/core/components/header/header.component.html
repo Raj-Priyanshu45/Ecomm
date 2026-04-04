@@ -64,7 +64,7 @@
           </a>
         }
 
-        @if (isAuthenticated && !hasRole('VENDOR') && !hasRole('ADMIN') && !hasRole('SELLER')) {
+        @if (isAuthenticated && !hasRole('VENDOR') && !hasRole('ADMIN') && !hasRole('SELLER') && !hasVendorProfileLocal) {
           <a routerLink="/vendor/register" routerLinkActive="bg-purple-50 text-purple-700"
              class="px-3 py-2 rounded-lg text-gray-600 hover:text-purple-700 hover:bg-purple-50 transition-all duration-150">
             Become Vendor
@@ -191,7 +191,7 @@
         </a>
       }
 
-      @if (isAuthenticated && !hasRole('VENDOR') && !hasRole('ADMIN') && !hasRole('SELLER')) {
+      @if (isAuthenticated && !hasRole('VENDOR') && !hasRole('ADMIN') && !hasRole('SELLER') && !hasVendorProfileLocal) {
         <a routerLink="/vendor/register" (click)="mobileMenuOpen=false"
            class="flex items-center gap-2 px-3 py-2.5 rounded-xl text-purple-700 hover:bg-purple-50 transition-colors">
           Become a Vendor

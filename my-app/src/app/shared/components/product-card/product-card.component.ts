@@ -48,9 +48,17 @@ import { StarRatingComponent } from '../star-rating/star-rating.component';
         </div>
 
         <div class="flex items-center justify-between mt-3">
-          <span class="text-lg font-bold text-gray-900">
-            ₹{{ product.price | number:'1.0-0' }}
-          </span>
+          <div class="flex flex-col">
+            @if (product.discount && product.discount > 0) {
+              <span class="text-xs text-gray-400 line-through">₹{{ product.price | number:'1.0-0' }}</span>
+              <span class="text-lg font-bold text-gray-900">
+                ₹{{ (product.price * (1 - product.discount / 100)) | number:'1.0-0' }}
+                <span class="ml-1 text-xs font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md">{{ product.discount }}% off</span>
+              </span>
+            } @else {
+              <span class="text-lg font-bold text-gray-900">₹{{ product.price | number:'1.0-0' }}</span>
+            }
+          </div>
           <button
             (click)="onAddToCart($event)"
             [disabled]="!product.inStock"
