@@ -136,7 +136,7 @@ public class AuthController {
      * Pulls the email claim from the JWT.
      * Keycloak puts it in the "email" claim by default.
      */
-    private String extractEmail(Authentication authentication) {
+    public String extractEmail(Authentication authentication) {
         try {
             if (authentication.getPrincipal() instanceof Jwt jwt) {
                 return jwt.getClaimAsString("email");
@@ -150,7 +150,7 @@ public class AuthController {
     /**
      * Pulls the name or preferred_username claim from the JWT.
      */
-    private String extractName(Authentication authentication) {
+    public String extractName(Authentication authentication) {
         try {
             if (authentication.getPrincipal() instanceof Jwt jwt) {
                 String name = jwt.getClaimAsString("name");

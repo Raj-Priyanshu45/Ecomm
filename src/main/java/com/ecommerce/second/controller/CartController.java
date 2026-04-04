@@ -40,13 +40,13 @@ public class CartController {
     private final CartService cartService;
 
     @GetMapping
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN')")
     public ResponseEntity<CartResponse> getCart(Authentication auth) {
         return ResponseEntity.ok(cartService.getCart(auth));
     }
 
     @PostMapping("/items")
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN')")
     public ResponseEntity<CartResponse> addItem(
             @RequestBody @Valid AddToCartRequest req,
             Authentication auth) {
@@ -54,7 +54,7 @@ public class CartController {
     }
 
     @PutMapping("/items/{cartItemId}")
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN')")
     public ResponseEntity<CartResponse> updateItem(
             @PathVariable int cartItemId,
             @RequestBody @Valid UpdateCartItemRequest req,
@@ -63,7 +63,7 @@ public class CartController {
     }
 
     @DeleteMapping("/items/{cartItemId}")
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN')")
     public ResponseEntity<CartResponse> removeItem(
             @PathVariable int cartItemId,
             Authentication auth) {
@@ -71,7 +71,7 @@ public class CartController {
     }
 
     @DeleteMapping
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN')")
     public ResponseEntity<Response> clearCart(Authentication auth) {
         cartService.clearCart(auth);
         return ResponseEntity.ok(new Response("Cart cleared"));

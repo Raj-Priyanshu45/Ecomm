@@ -39,7 +39,7 @@ public class ReviewController {
 
     /** Customer submits a review — must have purchased the product */
     @PostMapping("/api/products/{productId}/reviews")
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN')")
     public ResponseEntity<ReviewResponse> submitReview(
             @PathVariable int productId,
             @RequestBody @Valid CreateReviewRequest req,
@@ -49,7 +49,7 @@ public class ReviewController {
 
     /** Customer edits own review */
     @PutMapping("/api/products/{productId}/reviews/{reviewId}")
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN')")
     public ResponseEntity<ReviewResponse> editReview(
             @PathVariable int productId,
             @PathVariable Long reviewId,

@@ -41,6 +41,5 @@ public class User {
 
     private String email;
     
-    // Store the Name/Username from Keycloak
     private String name;
 }

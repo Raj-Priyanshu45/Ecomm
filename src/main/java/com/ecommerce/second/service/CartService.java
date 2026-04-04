@@ -75,13 +75,15 @@ public class CartService {
             cartItemRepo.save(item);
             log.debug("Cart item qty incremented: cartId={}, productId={}", cart.getId(), product.getId());
         } else {
-            cartItemRepo.save(CartItem.builder()
+            CartItem newItem = CartItem.builder()
                     .cart(cart)
                     .product(product)
                     .variant(variant)
                     .quantity(req.getQuantity())
                     .priceAtAddition(price)
-                    .build());
+                    .build();
+            cartItemRepo.save(newItem);
+            cart.getItems().add(newItem); // Fix L1 cache bug to include new item in response
             log.debug("Cart item added: cartId={}, productId={}", cart.getId(), product.getId());
         }
 

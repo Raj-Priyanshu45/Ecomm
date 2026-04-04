@@ -13,21 +13,25 @@ import org.springframework.stereotype.Service;
 
 import com.ecommerce.second.Enum.IndianState;
 import com.ecommerce.second.Enum.OrderStatus;
+import com.ecommerce.second.controller.AuthController;
 import com.ecommerce.second.dto.requestDTO.PlaceOrderRequest;
 import com.ecommerce.second.dto.requestDTO.UpdateOrderStatusRequest;
 import com.ecommerce.second.dto.responseDTO.OrderItemResponse;
 import com.ecommerce.second.dto.responseDTO.OrderResponse;
 import com.ecommerce.second.exceptionHandling.AccessDeniedException;
+import com.ecommerce.second.exceptionHandling.UserNotFoundException;
 import com.ecommerce.second.model.Cart;
 import com.ecommerce.second.model.CartItem;
 import com.ecommerce.second.model.Order;
 import com.ecommerce.second.model.OrderItem;
+import com.ecommerce.second.model.User;
 import com.ecommerce.second.model.Vendor;
 import com.ecommerce.second.model.VendorNotification;
 import com.ecommerce.second.model.Warehouse;
 import com.ecommerce.second.repo.InventoryRepo;
 import com.ecommerce.second.repo.OrderItemRepo;
 import com.ecommerce.second.repo.OrderRepo;
+import com.ecommerce.second.repo.UserRepo;
 import com.ecommerce.second.repo.VendorNotificationRepo;
 import com.ecommerce.second.repo.VendorRepo;
 import com.ecommerce.second.repo.WarehouseRepo;
@@ -49,7 +53,9 @@ public class OrderService {
     private final VendorRepo vendorRepo;
     private final VendorNotificationRepo notificationRepo;
     private final CartService cartService;
-
+    private final MailService mailService;
+    private final AuthController authController;
+    private final UserRepo userRepo;
     // ─────────────────────────────────────────────────────────────
     // Place order (Customer)
     // ─────────────────────────────────────────────────────────────
@@ -59,7 +65,7 @@ public class OrderService {
 
         Cart cart = cartService.getCartForCheckout(keycloakId);
         Warehouse warehouse = resolveWarehouse(req.getShippingState());
-
+        
         Order order = orderRepo.save(Order.builder()
                 .keycloakId(keycloakId)
                 .status(OrderStatus.PLACED)
@@ -93,6 +99,15 @@ public class OrderService {
         log.info("Order placed: id={}, keycloakId={}", order.getId(), keycloakId);
         notifyWarehouseVendors(warehouse, order);
 
+        String email = authController.extractEmail(auth);
+        if (email != null)
+            mailService.sendOrderVerification(
+                email,
+                order.getId().intValue(),
+                order.getTotalAmount(),
+                cart.getItems()          
+            );
+
         return toOrderResponse(orderRepo.findById(order.getId()).orElseThrow());
     }
 
@@ -119,6 +134,21 @@ public class OrderService {
             }
         }
 
+        String keycloakId = order.getKeycloakId();
+
+        User user = userRepo.findByKeyCloakId(keycloakId).orElse(null);
+
+        if(user == null){
+            throw new UserNotFoundException("No User Found");
+        }
+
+        String email = user.getEmail();
+
+        if (email != null){
+            mailService.sendOrderStatusUpdate(email, orderId, req.getStatus());
+        }
+        
+
         orderRepo.save(order);
         log.info("Order status updated: id={}, status={}", orderId, req.getStatus());
         return toOrderResponse(order);
@@ -143,6 +173,10 @@ public class OrderService {
 
         order.setStatus(OrderStatus.RETURN_REQUESTED);
         orderRepo.save(order);
+        String email = authController.extractEmail(auth);
+        if (email != null){
+            mailService.sendReturnConfirmation(email, orderId);
+        }
         log.info("Return requested: orderId={}, keycloakId={}", orderId, auth.getName());
 
         return toOrderResponse(order);
@@ -174,6 +208,14 @@ public class OrderService {
 
         order.setStatus(OrderStatus.CANCELLED);
         orderRepo.save(order);
+
+        if(!hasRole(auth, "ADMIN")){
+
+            String email = authController.extractEmail(auth);
+            if (email != null){
+                mailService.sendOrderCancellation(email, orderId);
+            }
+        }
         log.info("Order cancelled: id={}", orderId);
 
         return toOrderResponse(order);
@@ -238,6 +280,7 @@ public class OrderService {
     }
 
     private Warehouse resolveWarehouse(String shippingState) {
+
         try {
             IndianState state = IndianState.valueOf(
                     shippingState.trim().toUpperCase().replace(" ", "_"));

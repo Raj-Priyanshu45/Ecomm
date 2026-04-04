@@ -36,6 +36,7 @@ public class VendorService {
     private final VendorRepo vendorRepo;
     private final WarehouseRepo warehouseRepo;
     private final VendorNotificationRepo notificationRepo;
+    private final MailService mailService;
 
     // ─────────────────────────────────────────────────────────────
     // Warehouse management (ADMIN only)
@@ -89,6 +90,8 @@ public class VendorService {
 
         log.info("Vendor registered: id={}, keycloakId={}", vendor.getId(), keycloakId);
 
+        mailService.sendVendorApplicationReceived(req.getEmail());
+
         // Notify the vendor their application was received
         pushNotification(vendor,
                 "Application Received",
@@ -133,6 +136,8 @@ public class VendorService {
 
         log.info("Vendor approved: id={}, warehouse={}", vendor.getId(), warehouse.getId());
 
+        mailService.sendVendorApproved(vendor.getEmail(), warehouse.toString());
+
         // Notify the vendor
         pushNotification(vendor,
                 "Application Approved 🎉",
@@ -156,6 +161,8 @@ public class VendorService {
         vendorRepo.save(vendor);
 
         log.info("Vendor rejected: id={}", vendor.getId());
+
+        mailService.sendVendorRejected(vendor.getEmail(), req.getAdminNote());
 
         pushNotification(vendor,
                 "Application Update",

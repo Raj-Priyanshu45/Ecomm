@@ -54,7 +54,7 @@ public class OrderController {
     // ── Customer ───────────────────────────────────────────────────
 
     @PostMapping("/api/orders")
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN')")
     public ResponseEntity<OrderResponse> placeOrder(
             @RequestBody @Valid PlaceOrderRequest req,
             Authentication auth) {
@@ -62,7 +62,7 @@ public class OrderController {
     }
 
     @GetMapping("/api/orders")
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN')")
     public ResponseEntity<Page<OrderResponse>> myOrders(
             @RequestParam(defaultValue = "0")  int page,
             @RequestParam(defaultValue = "10") int size,
@@ -87,7 +87,7 @@ public class OrderController {
     }
 
     @PutMapping("/api/orders/{orderId}/return")
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('ADMIN')")
     public ResponseEntity<OrderResponse> requestReturn(
             @PathVariable Long orderId,
             Authentication auth) {
@@ -117,7 +117,7 @@ public class OrderController {
     // ── Vendor (warehouse staff) ───────────────────────────────────
 
     @GetMapping("/api/vendor/orders")
-    @PreAuthorize("hasRole('VENDOR')")
+    @PreAuthorize("hasRole('VENDOR') or hasRole('ADMIN')")
     public ResponseEntity<Page<OrderResponse>> warehouseOrders(
             @RequestParam int warehouseId,
             @RequestParam(required = false) OrderStatus status,
@@ -127,7 +127,7 @@ public class OrderController {
     }
 
     @PutMapping("/api/vendor/orders/{orderId}/status")
-    @PreAuthorize("hasRole('VENDOR')")
+    @PreAuthorize("hasRole('VENDOR') or hasRole('ADMIN')")
     public ResponseEntity<OrderResponse> vendorUpdateStatus(
             @PathVariable Long orderId,
             @RequestBody @Valid UpdateOrderStatusRequest req,
@@ -138,7 +138,7 @@ public class OrderController {
     // ── Support (delivery agent + return handler) ──────────────────
 
     @PutMapping("/api/support/orders/{orderId}/status")
-    @PreAuthorize("hasRole('SUPPORT')")
+    @PreAuthorize("hasRole('SUPPORT') or hasRole('ADMIN')")
     public ResponseEntity<OrderResponse> supportUpdateStatus(
             @PathVariable Long orderId,
             @RequestBody @Valid UpdateOrderStatusRequest req,
