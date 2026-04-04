@@ -11,6 +11,7 @@ public record AllProductResponse(
     String shortDesc,
     String imageUrl,
     BigDecimal price,
+    BigDecimal discount,
     boolean inStock,
     List<Tags> tags,
     double rating,

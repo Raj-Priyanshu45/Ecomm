@@ -61,7 +61,7 @@ public class Products {
     private String name;
 
     @NotBlank
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(nullable = false)
     private String description;
 
     @NotNull

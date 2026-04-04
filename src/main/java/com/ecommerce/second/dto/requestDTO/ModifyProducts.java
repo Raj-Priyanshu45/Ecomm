@@ -32,4 +32,7 @@ public class ModifyProducts {
     @NotNull
     private List<String> tags;
 
+    // Optional: discount percentage (0–100). Null means no discount.
+    private BigDecimal discount;
+
 }

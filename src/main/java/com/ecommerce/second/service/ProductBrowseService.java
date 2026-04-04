@@ -19,7 +19,6 @@ import com.ecommerce.second.exceptionHandling.ProductNotFoundException;
 import com.ecommerce.second.model.ProductImages;
 import com.ecommerce.second.model.Products;
 import com.ecommerce.second.model.VariantAttribute;
-import com.ecommerce.second.repo.InventoryRepo;
 import com.ecommerce.second.repo.ProductImagesRepo;
 import com.ecommerce.second.repo.ProductRepo;
 
@@ -34,7 +33,6 @@ public class ProductBrowseService {
 
     private final ProductRepo productRepo;
     private final ProductImagesRepo imageRepo;
-    private final InventoryRepo inventoryRepo;
     private final VarientAttrRepo attrRepo;
 
     // ─────────────────────────────────────────────────────────────
@@ -99,16 +97,24 @@ public class ProductBrowseService {
             sellerName = product.getSeller().getEmail() != null ? product.getSeller().getEmail() : "Seller";
         }
 
+        boolean inStock = product.getQuantity() > 0;
+
         return new SingleProductResponse(
+                product.getId(),
                 product.getName(),
                 product.getDescription(),
                 sellerName,
                 product.getPrice(),
+                product.getDiscount(),
                 product.getQuantity(),
                 product.getCreatedAt(),
                 product.getUpdatedAt(),
                 new ArrayList<>(product.getTags()),
-                image , attr
+                image, 
+                attr,
+                product.getRatingAverage(),
+                product.getReviewCount(),
+                inStock
         );
     }
 
@@ -174,24 +180,14 @@ public class ProductBrowseService {
                 ? p.getDescription().substring(0, 120) + "\u2026"
                 : p.getDescription();
 
-        // inStock: true if any inventory SKU tied to this product has available > 0
-        // Falls back to true if no variants exist (base-product assumed in stock)
-        boolean inStock = inventoryRepo.findAll().stream()
-                .filter(inv -> inv.getSkuCode() != null
-                        && inv.getSkuCode().startsWith(p.getName() + "-"))
-                .anyMatch(inv -> inv.getAvailable() > 0);
-
-        // If there are no variants at all, treat as in-stock (seller manages manually)
-        if (!inStock && images.isEmpty()) {
-            inStock = false;
-        } else if (!inStock) {
-            inStock = true; // base product with no variants — assume in stock
-        }
+        // Use product quantity as the single source of truth for stock status
+        boolean inStock = p.getQuantity() != null && p.getQuantity() > 0;
 
         return new AllProductResponse(
                 p.getId(), p.getName(), shortDesc, imageUrl,
-                p.getPrice(), inStock, new ArrayList<>(p.getTags()) , p.getRatingAverage()
-        , p.getReviewCount()
+                p.getPrice(), p.getDiscount(), inStock,
+                new ArrayList<>(p.getTags()), p.getRatingAverage(),
+                p.getReviewCount()
         );
     }
 }

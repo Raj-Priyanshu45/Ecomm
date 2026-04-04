@@ -30,4 +30,6 @@ public class CreateProducts {
 
     @NotNull
     private List<String> tags;
+
+    private BigDecimal discount;
 }

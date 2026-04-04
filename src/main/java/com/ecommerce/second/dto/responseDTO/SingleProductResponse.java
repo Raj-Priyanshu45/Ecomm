@@ -9,15 +9,19 @@ import com.ecommerce.second.model.Tags;
 
 
 public record SingleProductResponse(
-    String name , 
-    String description , 
-    String sellerId ,
+    int id,
+    String name, 
+    String description, 
+    String sellerId,
     BigDecimal price,
+    BigDecimal discount,
     Integer count,
-    LocalDateTime addedAt , 
-    LocalDateTime modifiedAt ,
+    LocalDateTime addedAt, 
+    LocalDateTime modifiedAt,
     List<Tags> tags,
     List<String> imageUrl,
-    Map<String , List<String>> varients
-) {
-}
+    Map<String, List<String>> varients,
+    double rating,
+    int reviewCount,
+    boolean inStock
+) {}

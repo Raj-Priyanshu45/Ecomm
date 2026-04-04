@@ -85,7 +85,7 @@ public class VendorController {
     }
 
     @GetMapping("/api/vendor/me")
-    @PreAuthorize("hasRole('VENDOR')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<VendorResponse> myProfile(Authentication auth) {
         return ResponseEntity.ok(vendorService.getMyProfile(auth));
     }

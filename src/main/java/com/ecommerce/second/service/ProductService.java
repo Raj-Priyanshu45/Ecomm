@@ -123,6 +123,7 @@ public class ProductService {
                         .seller(user)
                         .isDel(false)
                         .tags(tags)
+                        .discount(request.getDiscount())
                         .build());
 
         logger.info("Product created: id={}", newProduct.getId());
@@ -152,6 +153,7 @@ public class ProductService {
         product.setPrice(request.getPrice());
         product.setQuantity(request.getQuantity());
         product.setTags(tags);
+        product.setDiscount(request.getDiscount());
 
         productRepo.save(product);
         logger.info("Product modified: id={}", id);
