@@ -121,7 +121,7 @@ public class OrderService {
 
         order.setStatus(req.getStatus());
 
-        if (req.getStatus() == OrderStatus.ARRIVED || req.getStatus() == OrderStatus.DELIVERED) {
+        if (req.getStatus() == OrderStatus.DELIVERED) {
             order.setDeliveredAt(LocalDateTime.now());
         }
 
@@ -165,7 +165,7 @@ public class OrderService {
             throw new AccessDeniedException("You cannot request a return for this order");
         }
 
-        if (order.getStatus() != OrderStatus.ARRIVED && order.getStatus() != OrderStatus.DELIVERED) {
+        if (order.getStatus() != OrderStatus.DELIVERED) {
             throw new IllegalStateException(
                     "Return can only be requested for orders with status ARRIVED or DELIVERED. " +
                     "Current status: " + order.getStatus());
@@ -195,7 +195,6 @@ public class OrderService {
 
         if (order.getStatus() == OrderStatus.SHIPPED
                 || order.getStatus() == OrderStatus.OUT_FOR_DELIVERY
-                || order.getStatus() == OrderStatus.ARRIVED
                 || order.getStatus() == OrderStatus.DELIVERED) {
             throw new IllegalStateException("Order cannot be cancelled once shipped. Please use return instead.");
         }
@@ -356,7 +355,6 @@ public class OrderService {
 
         if (hasRole(auth, "VENDOR")) {
             boolean allowed = switch (current) {
-                case PAYMENT_CONFIRMED -> next == OrderStatus.CONFIRMED;
                 case CONFIRMED         -> next == OrderStatus.PACKED;
                 case PACKED            -> next == OrderStatus.SHIPPED;
                 default -> false;
@@ -368,7 +366,7 @@ public class OrderService {
         if (hasRole(auth, "SUPPORT")) {
             boolean allowed = switch (current) {
                 case SHIPPED             -> next == OrderStatus.OUT_FOR_DELIVERY;
-                case OUT_FOR_DELIVERY    -> next == OrderStatus.ARRIVED || next == OrderStatus.DELIVERY_FAILED;
+                case OUT_FOR_DELIVERY    -> next == OrderStatus.DELIVERED || next == OrderStatus.DELIVERY_FAILED;
                 case RETURN_REQUESTED    -> next == OrderStatus.RETURN_PICKED_UP;
                 case RETURN_PICKED_UP    -> next == OrderStatus.REFUNDED;
                 default -> false;
@@ -413,7 +411,6 @@ public class OrderService {
                 order.getShippingPhone(),
                 order.getWarehouse() != null ? order.getWarehouse().getId() : null,
                 order.getWarehouse() != null ? order.getWarehouse().getName() : null,
-                order.isPaymentConfirmed(),
                 items,
                 order.getPlacedAt(),
                 order.getUpdatedAt(),

@@ -90,10 +90,10 @@ public class Order {
     @JoinColumn(name = "warehouse_id")
     private Warehouse warehouse;
 
-    private String paymentId;         
+    // private String paymentId;         
 
-    @Builder.Default
-    private boolean paymentConfirmed = false;
+    // @Builder.Default
+    // private boolean paymentConfirmed = false;
 
 
     @CreatedDate

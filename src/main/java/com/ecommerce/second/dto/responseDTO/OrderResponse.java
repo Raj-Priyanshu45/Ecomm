@@ -18,7 +18,7 @@ public record OrderResponse(
         String shippingPhone,
         Integer warehouseId,
         String warehouseName,
-        boolean paymentConfirmed,
+        //boolean paymentConfirmed,
         List<OrderItemResponse> items,
         LocalDateTime placedAt,
         LocalDateTime updatedAt,
