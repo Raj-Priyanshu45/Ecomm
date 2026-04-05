@@ -22,7 +22,7 @@
         <div class="flex items-center gap-4 bg-white border border-gray-100 rounded-2xl p-4">
           <div class="w-16 h-16 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0">
             @if (item.productImage) {
-              <img [src]="'http://localhost:8080' + item.productImage"
+              <img [src]="getImageUrl(item.productImage)"
                    [alt]="item.productName"
                    class="w-full h-full object-cover"/>
             }

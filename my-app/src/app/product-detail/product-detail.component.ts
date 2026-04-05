@@ -52,7 +52,13 @@ export class ProductDetailComponent implements OnInit {
   editComment = '';
   editError = '';
 
-  imageBase = 'http://localhost:8080';
+  private localBase = 'http://localhost:8080';
+
+  /** Returns the correct image src — handles both Cloudinary (absolute) and local (relative) URLs. */
+  getImageUrl(url: string | null | undefined): string {
+    if (!url) return '';
+    return url.startsWith('http') ? url : this.localBase + url;
+  }
 
   ngOnInit(): void {
     this.productId = Number(this.route.snapshot.paramMap.get('id'));

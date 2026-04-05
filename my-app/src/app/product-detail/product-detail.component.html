@@ -16,7 +16,7 @@
       <div>
         <div class="aspect-square bg-gray-50 rounded-2xl overflow-hidden mb-3">
           @if (selectedImage) {
-            <img [src]="imageBase + selectedImage" alt="product"
+            <img [src]="getImageUrl(selectedImage)" alt="product"
                  class="w-full h-full object-cover"/>
           }
         </div>
@@ -27,7 +27,7 @@
                 (click)="selectedImage = img"
                 [class]="selectedImage === img ? 'ring-2 ring-indigo-500' : 'ring-1 ring-gray-200'"
                 class="w-16 h-16 rounded-xl overflow-hidden cursor-pointer">
-                <img [src]="imageBase + img" class="w-full h-full object-cover"/>
+                <img [src]="getImageUrl(img)" class="w-full h-full object-cover"/>
               </div>
             }
           </div>

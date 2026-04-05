@@ -17,7 +17,7 @@ import { StarRatingComponent } from '../star-rating/star-rating.component';
       <div class="relative aspect-square bg-gray-50 overflow-hidden">
         @if (product.imageUrl) {
           <img
-            [src]="imageBase + product.imageUrl"
+            [src]="getImageUrl(product.imageUrl)"
             [alt]="product.name"
             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             (error)="handleImgError($event)"
@@ -86,7 +86,13 @@ export class ProductCardComponent {
   @Output() addToCart = new EventEmitter<AllProductResponse>();
 
   private router = inject(Router);
-  imageBase = 'http://localhost:8080';
+  private localBase = 'http://localhost:8080';
+
+  /** Returns the correct image src — handles both Cloudinary (absolute) and local (relative) URLs. */
+  getImageUrl(url: string | null | undefined): string {
+    if (!url) return '';
+    return url.startsWith('http') ? url : this.localBase + url;
+  }
 
   goToDetail(): void {
     this.router.navigate(['/products', this.product.id]);
