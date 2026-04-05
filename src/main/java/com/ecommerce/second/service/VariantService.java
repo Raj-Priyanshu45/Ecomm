@@ -2,14 +2,8 @@ package com.ecommerce.second.service;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ecommerce.second.dto.requestDTO.VarientRequest;
+import com.ecommerce.second.dto.responseDTO.FileUploadResponse;
 import com.ecommerce.second.dto.responseDTO.VariantResponse;
 import com.ecommerce.second.exceptionHandling.AccessDeniedException;
 import com.ecommerce.second.exceptionHandling.ImageNotFoundException;
@@ -39,11 +34,11 @@ import lombok.RequiredArgsConstructor;
 @Service
 @Transactional
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class VariantService {
 
-    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
-    private static final Set<String> ALLOWED_EXTENSIONS = Set.of("png", "jpg", "jpeg", "webp");
-    private static final Path UPLOAD_PATH = Paths.get("uploads");
+
+    //private static final Path UPLOAD_PATH = Paths.get("uploads");
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -52,6 +47,7 @@ public class VariantService {
     private final ProductVarientsRepo productVariantsRepo;
     private final VarientAttrRepo variantAttrRepo;
     private final VarImageRepo varImageRepo;
+    private final FileStorageService imageService;
 
     // ─────────────────────────────────────────────────────────────
     // Helpers
@@ -79,36 +75,6 @@ public class VariantService {
         }
     }
 
-    private String saveFileToDisk(MultipartFile file) throws IOException {
-        if (file.getSize() > MAX_FILE_SIZE) {
-            throw new IllegalArgumentException("File too large (max 5 MB)");
-        }
-        String originalName = file.getOriginalFilename();
-        if (originalName == null || !originalName.contains(".")) {
-            throw new IllegalArgumentException("Invalid file name");
-        }
-        String contentType = file.getContentType();
-        if (contentType == null || !contentType.startsWith("image/")) {
-            throw new IllegalArgumentException("File must be an image");
-        }
-        int dotIndex = originalName.lastIndexOf('.');
-        String extension = originalName.substring(dotIndex + 1).toLowerCase();
-        String dotExt    = originalName.substring(dotIndex);
-        if (!ALLOWED_EXTENSIONS.contains(extension)) {
-            throw new IllegalArgumentException("Invalid image format. Allowed: png, jpg, jpeg, webp");
-        }
-        if (!Files.exists(UPLOAD_PATH)) {
-            Files.createDirectories(UPLOAD_PATH);
-        }
-        String fileName = UUID.randomUUID() + dotExt;
-        Files.copy(file.getInputStream(), UPLOAD_PATH.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
-        return "/uploads/" + fileName;
-    }
-
-    private void deleteFileFromDisk(String imageUrl) throws IOException {
-        Path path = UPLOAD_PATH.resolve(imageUrl.replace("/uploads/", ""));
-        Files.deleteIfExists(path);
-    }
 
     private String buildSkuCode(String productName, String key, String value) {
         return productName + "-" + key.trim().toLowerCase() + "-" + value.trim().toLowerCase();
@@ -153,6 +119,7 @@ public class VariantService {
 
     // ─────────────────────────────────────────────────────────────
 
+    @SuppressWarnings("null")
     public void addVariant(VarientRequest request, int productId,
             Authentication authentication, MultipartFile[] files, int primaryImageIndex) throws IOException {
 
@@ -244,7 +211,7 @@ public class VariantService {
 
         List<VarientImage> images = varImageRepo.findByVarientId(variantId);
         for (VarientImage img : images) {
-            deleteFileFromDisk(img.getImageUrl());
+            imageService.deleteFileFromCloud(img.getPublicId());
         }
 
         // orphanRemoval=true on ProductVariant.images handles VarientImage DB rows
@@ -291,13 +258,15 @@ public class VariantService {
             throw new IllegalArgumentException("Image does not belong to this variant");
         }
 
-        deleteFileFromDisk(image.getImageUrl());
-        String newUrl = saveFileToDisk(newFile);
-        image.setImageUrl(newUrl);
+        imageService.deleteFileFromCloud(image.getPublicId());
+        FileUploadResponse newUrl = imageService.saveFileToDisk(newFile).join();
+
+        image.setImageUrl(newUrl.getUrl());
+        image.setPublicId(newUrl.getFilname());
         varImageRepo.save(image);
 
         logger.info("Variant image replaced: imageId={}, variantId={}", imageId, variantId);
-        return newUrl;
+        return newUrl.getUrl();
     }
 
     public void deleteVariantImage(int imageId, int variantId,
@@ -317,7 +286,7 @@ public class VariantService {
             throw new ImageNotFoundException("Image does not belong to this variant");
         }
 
-        deleteFileFromDisk(image.getImageUrl());
+        imageService.deleteFileFromCloud(image.getPublicId());
         varImageRepo.delete(image);
         logger.info("Variant image deleted: imageId={}, variantId={}", imageId, variantId);
     }
@@ -340,7 +309,7 @@ public class VariantService {
         }
 
         for (VarientImage img : images) {
-            deleteFileFromDisk(img.getImageUrl());
+            imageService.deleteFileFromCloud(img.getPublicId());
         }
         varImageRepo.deleteByVarientId(variantId);
         logger.info("All images deleted for variantId={}", variantId);
@@ -388,16 +357,19 @@ public class VariantService {
         List<String> savedUrls = new ArrayList<>();
 
         for (int i = 0; i < files.length; i++) {
-            String imageUrl = saveFileToDisk(files[i]);
+            // String imageUrl = saveFileToDisk(files[i]);
+
+            FileUploadResponse imageUrl = imageService.saveFileToDisk(files[i]).join();
             boolean isPrimary = !alreadyHasPrimary && (primaryImageIndex == i);
 
             varImageRepo.save(VarientImage.builder()
-                    .imageUrl(imageUrl)
+                    .imageUrl(imageUrl.getUrl())
+                    .publicId(imageUrl.getFilname())
                     .primaryImage(isPrimary)
                     .varient(variant)
                     .build());
 
-            savedUrls.add(imageUrl);
+            savedUrls.add(imageUrl.getUrl());
         }
         return savedUrls;
     }

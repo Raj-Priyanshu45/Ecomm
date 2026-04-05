@@ -1,20 +1,29 @@
 package com.ecommerce.second.controller;
 
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.ecommerce.second.dto.requestDTO.AddressRequest;
 import com.ecommerce.second.dto.responseDTO.AddressResponse;
 import com.ecommerce.second.dto.responseDTO.Response;
 import com.ecommerce.second.exceptionHandling.AccessDeniedException;
 import com.ecommerce.second.model.Address;
 import com.ecommerce.second.repo.AddressRepo;
+
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * ──────────────────────────────────────────────────────────────────────────────
@@ -30,6 +39,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users/me/addresses")
+@SuppressWarnings("null")
 public class UserController {
 
     private final AddressRepo addressRepo;

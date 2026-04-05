@@ -1,19 +1,24 @@
 package com.ecommerce.second.controller;
 
-import com.ecommerce.second.Enum.Role;
-import com.ecommerce.second.dto.responseDTO.Response;
-import com.ecommerce.second.model.User;
-import com.ecommerce.second.repo.UserRepo;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-import java.util.Map;
+import com.ecommerce.second.Enum.Role;
+import com.ecommerce.second.dto.responseDTO.Response;
+import com.ecommerce.second.model.User;
+import com.ecommerce.second.repo.UserRepo;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * ──────────────────────────────────────────────────────────────────────────────
@@ -63,6 +68,7 @@ public class AuthController {
      *   5. CUSTOMER (default / fallback)
      */
     @PostMapping("/register")
+    @SuppressWarnings("null")
     public ResponseEntity<?> register(Authentication authentication) {
 
         String keycloakId = authentication.getName();
@@ -136,7 +142,7 @@ public class AuthController {
      * Pulls the email claim from the JWT.
      * Keycloak puts it in the "email" claim by default.
      */
-    public String extractEmail(Authentication authentication) {
+    private String extractEmail(Authentication authentication) {
         try {
             if (authentication.getPrincipal() instanceof Jwt jwt) {
                 return jwt.getClaimAsString("email");

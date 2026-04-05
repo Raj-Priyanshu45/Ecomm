@@ -29,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @Transactional
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class VendorService {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
@@ -42,6 +43,7 @@ public class VendorService {
     // Warehouse management (ADMIN only)
     // ─────────────────────────────────────────────────────────────
 
+    @SuppressWarnings("null")
     public WarehouseResponse createWarehouse(CreateWarehouseRequest req) {
         if (warehouseRepo.existsByState(req.getState())) {
             throw new IllegalArgumentException(
@@ -54,8 +56,8 @@ public class VendorService {
                 .city(req.getCity())
                 .pincode(req.getPincode())
                 .contactEmail(req.getContactEmail())
-                .contactPhone(req.getContactPhone())
-                .capacityLimit(req.getCapacityLimit())
+                .contactPhone(req.getContactNumber())
+                .capacityLimit(req.getCapacity())
                 .build());
         log.info("Warehouse created: id={}, state={}", wh.getId(), wh.getState());
         return toWarehouseResponse(wh);
@@ -77,6 +79,7 @@ public class VendorService {
             throw new IllegalArgumentException("You have already submitted a vendor application");
         }
        
+        @SuppressWarnings("null")
         Vendor vendor = vendorRepo.save(Vendor.builder()
                 .keycloakId(keycloakId)
                 .email(req.getEmail())
@@ -110,6 +113,7 @@ public class VendorService {
                 .map(this::toVendorResponse);
     }
 
+    
     public VendorResponse approveVendor(VendorApproveRequest req) {
         Vendor vendor = getVendorById(req.getVendorId());
 

@@ -24,6 +24,6 @@ public class CreateWarehouseRequest {
     private String pincode;
  
     private String contactEmail;
-    private String contactPhone;
-    private int capacityLimit;
+    private String contactNumber;
+    private int capacity;
 }

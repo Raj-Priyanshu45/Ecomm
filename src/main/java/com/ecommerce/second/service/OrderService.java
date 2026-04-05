@@ -9,11 +9,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 import com.ecommerce.second.Enum.IndianState;
 import com.ecommerce.second.Enum.OrderStatus;
-import com.ecommerce.second.controller.AuthController;
 import com.ecommerce.second.dto.requestDTO.PlaceOrderRequest;
 import com.ecommerce.second.dto.requestDTO.UpdateOrderStatusRequest;
 import com.ecommerce.second.dto.responseDTO.OrderItemResponse;
@@ -42,6 +42,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @Transactional
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class OrderService {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
@@ -54,7 +55,6 @@ public class OrderService {
     private final VendorNotificationRepo notificationRepo;
     private final CartService cartService;
     private final MailService mailService;
-    private final AuthController authController;
     private final UserRepo userRepo;
     // ─────────────────────────────────────────────────────────────
     // Place order (Customer)
@@ -99,7 +99,7 @@ public class OrderService {
         log.info("Order placed: id={}, keycloakId={}", order.getId(), keycloakId);
         notifyWarehouseVendors(warehouse, order);
 
-        String email = authController.extractEmail(auth);
+        String email = extractEmail(auth);
         if (email != null)
             mailService.sendOrderVerification(
                 email,
@@ -173,7 +173,7 @@ public class OrderService {
 
         order.setStatus(OrderStatus.RETURN_REQUESTED);
         orderRepo.save(order);
-        String email = authController.extractEmail(auth);
+        String email = extractEmail(auth);
         if (email != null){
             mailService.sendReturnConfirmation(email, orderId);
         }
@@ -211,7 +211,7 @@ public class OrderService {
 
         if(!hasRole(auth, "ADMIN")){
 
-            String email = authController.extractEmail(auth);
+            String email = extractEmail(auth);
             if (email != null){
                 mailService.sendOrderCancellation(email, orderId);
             }
@@ -277,6 +277,17 @@ public class OrderService {
     private Order getOrder(Long orderId) {
         return orderRepo.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found: " + orderId));
+    }
+
+    private String extractEmail(Authentication authentication) {
+        try {
+            if (authentication.getPrincipal() instanceof Jwt jwt) {
+                return jwt.getClaimAsString("email");
+            }
+        } catch (Exception e) {
+            log.warn("Could not extract email from JWT: {}", e.getMessage());
+        }
+        return null;
     }
 
     private Warehouse resolveWarehouse(String shippingState) {

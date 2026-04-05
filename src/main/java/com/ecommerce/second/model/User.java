@@ -22,7 +22,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name="appUsers" , 
+@Table(name="app_users" , 
     indexes= {
         @Index(name = "idx_user_id" , columnList="keyCloakId")
     }

@@ -1,26 +1,37 @@
 package com.ecommerce.second.service;
 
-import com.ecommerce.second.dto.requestDTO.AddToCartRequest;
-import com.ecommerce.second.dto.requestDTO.UpdateCartItemRequest;
-import com.ecommerce.second.dto.responseDTO.CartItemResponse;
-import com.ecommerce.second.dto.responseDTO.CartResponse;
-import com.ecommerce.second.exceptionHandling.ProductNotFoundException;
-import com.ecommerce.second.model.*;
-import com.ecommerce.second.repo.*;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
+import com.ecommerce.second.dto.requestDTO.AddToCartRequest;
+import com.ecommerce.second.dto.requestDTO.UpdateCartItemRequest;
+import com.ecommerce.second.dto.responseDTO.CartItemResponse;
+import com.ecommerce.second.dto.responseDTO.CartResponse;
+import com.ecommerce.second.exceptionHandling.ProductNotFoundException;
+import com.ecommerce.second.model.Cart;
+import com.ecommerce.second.model.CartItem;
+import com.ecommerce.second.model.ProductImages;
+import com.ecommerce.second.model.ProductVariant;
+import com.ecommerce.second.model.Products;
+import com.ecommerce.second.repo.CartItemRepo;
+import com.ecommerce.second.repo.CartRepo;
+import com.ecommerce.second.repo.ProductImagesRepo;
+import com.ecommerce.second.repo.ProductRepo;
+import com.ecommerce.second.repo.ProductVarientsRepo;
+
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class CartService {
 
     private final Logger log = LoggerFactory.getLogger(getClass());

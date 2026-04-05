@@ -32,4 +32,6 @@ public class VarientImage {
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="varient_id" , nullable = false)
     private ProductVariant varient;
+
+    private String publicId;
 }

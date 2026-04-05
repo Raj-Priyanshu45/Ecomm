@@ -1,18 +1,21 @@
 package com.ecommerce.second.service;
 
-import com.ecommerce.second.dto.requestDTO.AddressRequest;
-import com.ecommerce.second.dto.responseDTO.AddressResponse;
-import com.ecommerce.second.model.Address;
-import com.ecommerce.second.repo.AddressRepo;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import com.ecommerce.second.dto.requestDTO.AddressRequest;
+import com.ecommerce.second.dto.responseDTO.AddressResponse;
+import com.ecommerce.second.model.Address;
+import com.ecommerce.second.repo.AddressRepo;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class AddressService {
 
     private final AddressRepo addressRepo;

@@ -14,16 +14,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.ecommerce.second.Enum.Role;
-
 import com.ecommerce.second.dto.requestDTO.CreateProducts;
 import com.ecommerce.second.dto.requestDTO.ModifyProducts;
 import com.ecommerce.second.dto.responseDTO.AddProduct;
 import com.ecommerce.second.dto.responseDTO.ChangeImageGETResponse;
+import com.ecommerce.second.dto.responseDTO.FileUploadResponse;
 import com.ecommerce.second.dto.responseDTO.ImageDTO;
 import com.ecommerce.second.exceptionHandling.AccessDeniedException;
 import com.ecommerce.second.exceptionHandling.ImageNotFoundException;
 import com.ecommerce.second.exceptionHandling.ProductNotFoundException;
-import com.ecommerce.second.exceptionHandling.UserNotFoundException;
 import com.ecommerce.second.model.ProductImages;
 import com.ecommerce.second.model.Products;
 import com.ecommerce.second.model.Tags;
@@ -37,7 +36,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
-
+@SuppressWarnings("null")
 @RequiredArgsConstructor
 public class ProductService {
 
@@ -197,20 +196,16 @@ public class ProductService {
 
         assertOwnerOrAdmin(authentication, product, user);
 
-        List<CompletableFuture<String>> futures = new ArrayList<>();
+        List<CompletableFuture<FileUploadResponse>> futures = new ArrayList<>();
 
         // Step 1: start all async uploads
         for (MultipartFile file : files) {
-            try {
-                futures.add(fileService.saveFileToDisk(file));
-            } catch (IOException e) {
-                throw new RuntimeException("File upload failed", e);
-            }
+            futures.add(fileService.saveFileToDisk(file));
         }
 
         // Step 2: wait for all to complete
-        List<String> urls = new ArrayList<>();
-        for (CompletableFuture<String> future : futures) {
+        List<FileUploadResponse> urls = new ArrayList<>();
+        for (CompletableFuture<FileUploadResponse> future : futures) {
             urls.add(future.join());
         }
 
@@ -222,15 +217,16 @@ public class ProductService {
             boolean isPrimary = !alreadyHasPrimary && (primaryImageIndex == i);
 
             imageRepo.save(ProductImages.builder()
-                    .imageUrl(urls.get(i))
+                    .imageUrl(urls.get(i).getUrl())
                     .primaryImage(isPrimary)
                     .product(product)
+                    .publicId(urls.get(i).getFilname())
                     .build());
 
-            savedUrls.add(urls.get(i));
+            savedUrls.add(urls.get(i).getUrl());
         }
 
-return savedUrls;
+    return savedUrls;
     }
 
     
@@ -247,16 +243,18 @@ return savedUrls;
             throw new IllegalArgumentException("Image does not belong to this product");
         }
 
-        fileService.deleteFileFromDisk(image.getImageUrl());
-        CompletableFuture<String> newUrlFuture = fileService.saveFileToDisk(newFile);
+        fileService.deleteFileFromCloud(image.getPublicId());
+        CompletableFuture<FileUploadResponse> newUrlFuture = fileService.saveFileToDisk(newFile);
 
-        String newUrl = newUrlFuture.join();
+        FileUploadResponse newUrl = newUrlFuture.join();
 
-        image.setImageUrl(newUrl);
+        image.setImageUrl(newUrl.getUrl());
+        image.setPublicId(newUrl.getFilname());
         imageRepo.save(image);
 
         logger.info("Image id={} replaced for product id={}", imageId, productId);
-        return newUrl;
+        
+        return newUrl.getUrl();
     }
 
   
@@ -271,7 +269,7 @@ return savedUrls;
             throw new ImageNotFoundException("Image does not belong to this product");
         }
 
-        fileService.deleteFileFromDisk(image.getImageUrl()).join();
+        fileService.deleteFileFromCloud(image.getPublicId()).join();
         imageRepo.delete(image);
 
         logger.info("Image id={} deleted from product id={}", imageId, productId);
@@ -289,7 +287,7 @@ return savedUrls;
         }
 
         for (ProductImages img : images) {
-            fileService.deleteFileFromDisk(img.getImageUrl()).join();
+            fileService.deleteFileFromCloud(img.getPublicId()).join();
         }
 
         imageRepo.deleteByProductId(productId);

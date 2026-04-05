@@ -13,6 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 @EnableJpaAuditing
 public class AuditConfig {
 
+    @SuppressWarnings("null")
     @Bean
     public AuditorAware<String> auditorAware(){
         

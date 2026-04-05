@@ -36,4 +36,6 @@ public class ProductImages {
     private String imageUrl;
 
     private boolean primaryImage;
+
+    private String publicId;
 }
