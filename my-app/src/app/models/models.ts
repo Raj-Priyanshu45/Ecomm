@@ -108,7 +108,6 @@ export interface OrderResponse {
   shippingPhone: string;
   warehouseId: number | null;
   warehouseName: string | null;
-  paymentConfirmed: boolean;
   items: OrderItemResponse[];
   placedAt: string;
   updatedAt: string;

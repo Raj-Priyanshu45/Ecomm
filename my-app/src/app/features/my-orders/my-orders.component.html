@@ -68,7 +68,7 @@
 
               <!-- Actions -->
               <div class="flex gap-2">
-                @if (order.status === 'PLACED' || order.status === 'PAYMENT_CONFIRMED' || order.status === 'CONFIRMED') {
+                @if (order.status === 'PLACED' || order.status === 'CONFIRMED') {
                   <button (click)="cancelOrder(order.orderId)"
                           class="px-4 py-2 text-sm border border-red-200 text-red-600 rounded-xl hover:bg-red-50 transition-colors">
                     Cancel Order

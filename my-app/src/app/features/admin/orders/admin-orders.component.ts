@@ -22,12 +22,11 @@ interface AdminOrder {
   warehouseName: string;
   items: OrderItem[];
   placedAt: string;
-  paymentConfirmed: boolean;
 }
 
 const ORDER_STATUSES = [
-  'PLACED', 'PAYMENT_CONFIRMED', 'CONFIRMED', 'PACKED',
-  'SHIPPED', 'OUT_FOR_DELIVERY', 'ARRIVED', 'DELIVERED',
+  'PLACED', 'CONFIRMED', 'PACKED',
+  'SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED',
   'CANCELLED', 'RETURN_REQUESTED', 'RETURN_PICKED_UP', 'REFUNDED', 'DELIVERY_FAILED'
 ];
 
@@ -102,11 +101,11 @@ const ORDER_STATUSES = [
                               class="text-xs px-2 py-0.5 rounded-full font-medium">
                           {{ order.status.replace('_', ' ') }}
                         </span>
-                        @if (!order.paymentConfirmed) {
+                        <!-- @if (!order.paymentConfirmed) {
                           <span class="text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 font-medium">
                             Unpaid
                           </span>
-                        }
+                        } -->
                       </div>
                       <p class="text-xs text-gray-400 mt-0.5">
                         {{ order.shippingCity }}, {{ order.shippingState }}
@@ -203,7 +202,7 @@ export class AdminOrdersComponent implements OnInit {
 
   statusFilters = [
     { value: 'PLACED', label: 'Placed', activeClass: 'bg-yellow-500 text-white' },
-    { value: 'PAYMENT_CONFIRMED', label: 'Payment Confirmed', activeClass: 'bg-blue-500 text-white' },
+    // { value: 'PAYMENT_CONFIRMED', label: 'Payment Confirmed', activeClass: 'bg-blue-500 text-white' },
     { value: 'CONFIRMED', label: 'Confirmed', activeClass: 'bg-indigo-500 text-white' },
     { value: 'PACKED', label: 'Packed', activeClass: 'bg-purple-500 text-white' },
     { value: 'SHIPPED', label: 'Shipped', activeClass: 'bg-cyan-500 text-white' },
