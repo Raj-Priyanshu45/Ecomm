@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { ProductCardComponent } from '../../../shared/components/product-card/product-card.component';
 import { AllProductResponse } from '../../../models/models';
 import { CartService } from '../../cart/cart.service';
+import { ToastService } from '../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-tag-products',
@@ -76,6 +77,7 @@ export class TagProducts implements OnInit {
   private route = inject(ActivatedRoute);
   private http = inject(HttpClient);
   private cartService = inject(CartService);
+  private toast = inject(ToastService);
 
   tagSlug = '';
   products: AllProductResponse[] = [];
@@ -105,8 +107,8 @@ export class TagProducts implements OnInit {
 
   onAddToCart(product: AllProductResponse) {
     this.cartService.addItem({ productId: product.id, quantity: 1 }).subscribe({
-      next: () => {},
-      error: () => alert('Failed to add to cart'),
+      next: () => this.toast.success('Item added to your cart!'),
+      error: () => this.toast.error('Could not add item to cart. Please make sure you are logged in and try again.'),
     });
   }
 }

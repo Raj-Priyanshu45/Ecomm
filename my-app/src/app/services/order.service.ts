@@ -2,10 +2,11 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { OrderResponse, PlaceOrderRequest, PageResponse } from '../models/models';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class OrderService {
-  private readonly baseUrl = 'http://localhost:8080/api/orders';
+  private readonly baseUrl = `${environment.apiUrl}/api/orders`;
 
   constructor(private http: HttpClient) {}
 

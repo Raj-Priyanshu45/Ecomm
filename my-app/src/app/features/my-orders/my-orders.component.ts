@@ -4,6 +4,7 @@ import { DecimalPipe, DatePipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { OidcSecurityService } from 'angular-auth-oidc-client';
 import { OrderResponse } from '../../models/models';
+import { ToastService } from '../../shared/services/toast.service';
 
 interface PagedOrders {
   content: OrderResponse[];
@@ -20,6 +21,7 @@ interface PagedOrders {
 })
 export class MyOrdersComponent implements OnInit {
   private http = inject(HttpClient);
+  private toast = inject(ToastService);
   private baseUrl = 'http://localhost:8080';
 
   orders: OrderResponse[] = [];
@@ -42,7 +44,10 @@ export class MyOrdersComponent implements OnInit {
           this.totalPages = res.totalPages;
           this.loading = false;
         },
-        error: () => (this.loading = false),
+        error: () => {
+          this.loading = false;
+          this.toast.error('Unable to load your orders. Please refresh the page.');
+        },
       });
   }
 
@@ -54,7 +59,8 @@ export class MyOrdersComponent implements OnInit {
     this.http
       .put(`${this.baseUrl}/api/orders/${orderId}/cancel`, {})
       .subscribe({
-        next: () => this.loadOrders(),
+        next: () => { this.toast.success('Your order has been cancelled.'); this.loadOrders(); },
+        error: () => this.toast.error('Could not cancel this order. Please try again or contact support.'),
       });
   }
 
@@ -62,7 +68,8 @@ export class MyOrdersComponent implements OnInit {
     this.http
       .put(`${this.baseUrl}/api/orders/${orderId}/return`, {})
       .subscribe({
-        next: () => this.loadOrders(),
+        next: () => { this.toast.success('Return request submitted successfully.'); this.loadOrders(); },
+        error: () => this.toast.error('Could not submit your return request. Please try again.'),
       });
   }
 

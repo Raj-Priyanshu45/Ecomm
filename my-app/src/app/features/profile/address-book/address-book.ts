@@ -119,7 +119,8 @@ export class AddressBook implements OnInit {
         },
         error: (err) => {
           this.submitting = false;
-          this.errorMsg = 'Failed to update address: ' + (err.error?.message || err.message);
+          const msg = err.error?.mess?.[0] || 'Could not update address. Please check the details and try again.';
+          this.errorMsg = msg;
         }
       });
     } else {
@@ -132,7 +133,8 @@ export class AddressBook implements OnInit {
         },
         error: (err) => {
           this.submitting = false;
-          this.errorMsg = 'Failed to save address: ' + (err.error?.message || err.message);
+          const msg = err.error?.mess?.[0] || 'Could not save address. Please check the details and try again.';
+          this.errorMsg = msg;
         }
       });
     }

@@ -3,6 +3,7 @@ import { RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { DecimalPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ToastService } from '../../../shared/services/toast.service';
 
 interface OrderItem {
   orderItemId: number;
@@ -187,6 +188,7 @@ const ORDER_STATUSES = [
 })
 export class AdminOrdersComponent implements OnInit {
   private http = inject(HttpClient);
+  private toast = inject(ToastService);
   private baseUrl = 'http://localhost:8080';
 
   orders: AdminOrder[] = [];
@@ -227,7 +229,10 @@ export class AdminOrdersComponent implements OnInit {
         this.totalElements = res.totalElements ?? 0;
         this.loading = false;
       },
-      error: () => (this.loading = false)
+      error: () => {
+        this.loading = false;
+        this.toast.error('Unable to load orders. Please refresh the page.');
+      }
     });
   }
 
@@ -245,7 +250,10 @@ export class AdminOrdersComponent implements OnInit {
         delete this.statusUpdates[orderId];
         this.loadOrders();
       },
-      error: () => (this.updatingId = null)
+      error: () => {
+        this.updatingId = null;
+        this.toast.error('Could not update the order status. Please try again.');
+      }
     });
   }
 

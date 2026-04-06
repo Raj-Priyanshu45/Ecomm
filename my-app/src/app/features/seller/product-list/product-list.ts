@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProductService } from '../services/product.service';
 import { RouterModule } from '@angular/router';
+import { ToastService } from '../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-product-list',
@@ -13,6 +14,7 @@ import { RouterModule } from '@angular/router';
 export class ProductList implements OnInit {
   products: any[] = [];
   loading = true;
+  private toast = inject(ToastService);
 
   constructor(private productService: ProductService) {}
 
@@ -27,9 +29,9 @@ export class ProductList implements OnInit {
         this.products = res.products || res.data || [];
         this.loading = false;
       },
-      error: (err) => {
-        console.error('Failed to load products', err);
+      error: () => {
         this.loading = false;
+        this.toast.error('Unable to load your products. Please refresh the page.');
       }
     });
   }
@@ -38,10 +40,11 @@ export class ProductList implements OnInit {
     if (confirm('Are you sure you want to delete this product?')) {
       this.productService.deleteProduct(id).subscribe({
         next: () => {
+          this.toast.success('Product deleted successfully.');
           this.loadProducts();
         },
-        error: (err) => {
-          console.error('Failed to delete product', err);
+        error: () => {
+          this.toast.error('Could not delete this product. Please try again.');
         }
       });
     }

@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { CreateReviewRequest, ReviewResponse } from '../models/models';
+import { environment } from '../../environments/environment';
 
 export interface PagedReviews {
   content: ReviewResponse[];
@@ -13,7 +14,7 @@ export interface PagedReviews {
 @Injectable({ providedIn: 'root' })
 export class ReviewService {
   private http = inject(HttpClient);
-  private baseUrl = 'http://localhost:8080';
+  private baseUrl = environment.apiUrl;
 
   getReviews(productId: number, page = 0, size = 10): Observable<PagedReviews> {
     return this.http.get<PagedReviews>(

@@ -3,6 +3,7 @@ import { RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ToastService } from '../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-admin-vendors',
@@ -58,7 +59,7 @@ import { FormsModule } from '@angular/forms';
                               class="px-4 py-1.5 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors">
                         Approve
                       </button>
-                      <button (click)="reject(vendor.id)"
+                      <button (click)="openRejectModal(vendor.id)"
                               class="px-4 py-1.5 bg-rose-100 text-rose-700 text-sm font-semibold rounded-lg hover:bg-rose-200 transition-colors">
                         Reject
                       </button>
@@ -70,11 +71,39 @@ import { FormsModule } from '@angular/forms';
           }
         </div>
       }
+
+      <!-- ── Inline Rejection Modal ── -->
+      @if (showRejectModal) {
+        <div class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+             (click)="cancelReject()">
+          <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 animate-[fade-in_0.2s_ease-out]"
+               (click)="$event.stopPropagation()">
+            <h3 class="text-lg font-bold text-gray-900 mb-1">Reject Vendor Application</h3>
+            <p class="text-sm text-gray-500 mb-4">Provide a reason for rejection. This will be visible to the vendor.</p>
+            <textarea [(ngModel)]="rejectReason"
+                      rows="3"
+                      placeholder="e.g. Incomplete business details, duplicate application..."
+                      class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-rose-400 resize-none transition-all"></textarea>
+            <div class="flex gap-3 mt-4 justify-end">
+              <button (click)="cancelReject()"
+                      class="px-5 py-2 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-100 transition-colors">
+                Cancel
+              </button>
+              <button (click)="confirmReject()" [disabled]="!rejectReason.trim()"
+                      class="px-5 py-2 bg-rose-600 text-white text-sm font-semibold rounded-xl hover:bg-rose-700 disabled:opacity-50 transition-colors">
+                Confirm Rejection
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
     </div>
   `,
 })
 export class AdminVendorsComponent implements OnInit {
   private http = inject(HttpClient);
+  private toast = inject(ToastService);
   private baseUrl = 'http://localhost:8080';
 
   vendors: any[] = [];
@@ -82,6 +111,11 @@ export class AdminVendorsComponent implements OnInit {
   selectedWarehouses: Record<number, number> = {};
   loading = true;
   selectedStatus = 'PENDING';
+
+  // Inline rejection modal
+  showRejectModal = false;
+  rejectingVendorId: number | null = null;
+  rejectReason = '';
 
   ngOnInit(): void {
     this.loadVendors();
@@ -114,17 +148,44 @@ export class AdminVendorsComponent implements OnInit {
     if (!warehouseId) return;
     this.http
       .post(`${this.baseUrl}/api/admin/vendors/approve`, { vendorId, warehouseId })
-      .subscribe({ next: () => {
-        delete this.selectedWarehouses[vendorId];
-        this.loadVendors();
-      } });
+      .subscribe({
+        next: () => {
+          delete this.selectedWarehouses[vendorId];
+          this.toast.success('Vendor approved successfully.');
+          this.loadVendors();
+        },
+        error: () => this.toast.error('Could not approve vendor. Please try again.')
+      });
   }
 
-  reject(vendorId: number): void {
-    const reason = prompt('Rejection reason:');
-    if (!reason) return;
+  openRejectModal(vendorId: number): void {
+    this.rejectingVendorId = vendorId;
+    this.rejectReason = '';
+    this.showRejectModal = true;
+  }
+
+  cancelReject(): void {
+    this.showRejectModal = false;
+    this.rejectingVendorId = null;
+    this.rejectReason = '';
+  }
+
+  confirmReject(): void {
+    if (!this.rejectingVendorId || !this.rejectReason.trim()) {
+      this.toast.warning('Please provide a rejection reason.');
+      return;
+    }
+    const vendorId = this.rejectingVendorId;
+    const adminNote = this.rejectReason.trim();
     this.http
-      .post(`${this.baseUrl}/api/admin/vendors/reject`, { vendorId, adminNote: reason })
-      .subscribe({ next: () => this.loadVendors() });
+      .post(`${this.baseUrl}/api/admin/vendors/reject`, { vendorId, adminNote })
+      .subscribe({
+        next: () => {
+          this.toast.success('Vendor application rejected.');
+          this.cancelReject();
+          this.loadVendors();
+        },
+        error: () => this.toast.error('Could not reject vendor. Please try again.')
+      });
   }
 }

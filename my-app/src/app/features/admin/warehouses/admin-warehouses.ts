@@ -2,6 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { ToastService } from '../../../shared/services/toast.service';
 
 interface Warehouse {
   id: number;
@@ -23,6 +24,7 @@ interface Warehouse {
 })
 export class AdminWarehouses implements OnInit {
   private http = inject(HttpClient);
+  private toast = inject(ToastService);
   private readonly base = 'http://localhost:8080';
 
   warehouses: Warehouse[] = [];
@@ -62,7 +64,7 @@ export class AdminWarehouses implements OnInit {
       error: () => {
         this.warehouses = [];
         this.loading = false;
-        alert('Failed to load warehouses');
+        this.toast.error('Unable to load warehouses. Please refresh the page.');
       }
     });
   }
@@ -89,7 +91,8 @@ export class AdminWarehouses implements OnInit {
       },
       error: (err) => {
         this.submitting = false;
-        alert('Failed to create warehouse: ' + (err.error?.message || err.message));
+        const msg = err.error?.mess?.[0] || 'Could not create warehouse. Please check your details and try again.';
+        this.toast.error(msg);
       }
     });
   }

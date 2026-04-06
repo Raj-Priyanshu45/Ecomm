@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { OidcSecurityService } from 'angular-auth-oidc-client';
 import { CartService } from './cart.service';
 import { CartResponse } from '../../models/models';
+import { ToastService } from '../../shared/services/toast.service';
 
 @Component({
   selector: 'app-cart',
@@ -15,6 +16,7 @@ import { CartResponse } from '../../models/models';
 export class CartComponent implements OnInit {
   private cartService = inject(CartService);
   private oidc = inject(OidcSecurityService);
+  private toast = inject(ToastService);
 
   cart: CartResponse | null = null;
   loading = true;
@@ -31,7 +33,10 @@ export class CartComponent implements OnInit {
         this.cart = c;
         this.loading = false;
       },
-      error: () => (this.loading = false),
+      error: () => {
+        this.loading = false;
+        this.toast.error('Unable to load your cart. Please refresh the page.');
+      },
     });
   }
 
@@ -42,12 +47,14 @@ export class CartComponent implements OnInit {
     }
     this.cartService.updateItem(cartItemId, qty).subscribe({
       next: (c) => (this.cart = c),
+      error: () => this.toast.error('Could not update item quantity. Please try again.'),
     });
   }
 
   removeItem(cartItemId: number): void {
     this.cartService.removeItem(cartItemId).subscribe({
       next: (c) => (this.cart = c),
+      error: () => this.toast.error('Could not remove item from cart. Please try again.'),
     });
   }
 

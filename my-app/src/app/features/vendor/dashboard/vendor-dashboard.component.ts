@@ -3,6 +3,7 @@ import { RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { DecimalPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ToastService } from '../../../shared/services/toast.service';
 
 interface VendorProfile {
   id: number;
@@ -311,6 +312,7 @@ interface Order {
 })
 export class VendorDashboardComponent implements OnInit, OnDestroy {
   private http = inject(HttpClient);
+  private toast = inject(ToastService);
   private readonly base = 'http://localhost:8080';
 
   private pollingInterval: any;
@@ -383,7 +385,10 @@ export class VendorDashboardComponent implements OnInit, OnDestroy {
           this.orders = res.content ?? [];
           this.ordersLoading = false;
         },
-        error: () => (this.ordersLoading = false),
+        error: () => {
+          this.ordersLoading = false;
+          this.toast.error('Unable to load warehouse orders. Please try again.');
+        },
       });
   }
 
@@ -425,7 +430,10 @@ export class VendorDashboardComponent implements OnInit, OnDestroy {
           delete this.statusUpdates[orderId];
           this.loadOrders();
         },
-        error: () => (this.updatingId = null),
+        error: () => {
+          this.updatingId = null;
+          this.toast.error('Could not update the order status. Please try again.');
+        },
       });
   }
 

@@ -2,6 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { ToastService } from '../../../shared/services/toast.service';
 
 interface OrderItem {
   orderItemId: number;
@@ -33,6 +34,7 @@ interface Order {
 })
 export class SupportOrders implements OnInit {
   private http = inject(HttpClient);
+  private toast = inject(ToastService);
   private readonly base = 'http://localhost:8080';
 
   orders: Order[] = [];
@@ -59,7 +61,7 @@ export class SupportOrders implements OnInit {
       },
       error: () => {
         this.loading = false;
-        alert('Failed to load support orders');
+        this.toast.error('Unable to load orders. Please refresh the page and try again.');
       }
     });
   }
@@ -95,7 +97,7 @@ export class SupportOrders implements OnInit {
       },
       error: () => {
         this.updatingId = null;
-        alert('Failed to update status');
+        this.toast.error('Could not update the order status. Please try again.');
       }
     });
   }

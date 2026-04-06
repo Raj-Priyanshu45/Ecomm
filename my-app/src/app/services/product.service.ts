@@ -2,11 +2,12 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AllProductResponse, ApiResponse, SingleProductResponse } from '../models/models';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
   private http = inject(HttpClient);
-  private baseUrl = 'http://localhost:8080';
+  private baseUrl = environment.apiUrl;
 
   getProducts(page = 0, size = 20): Observable<ApiResponse<AllProductResponse>> {
     return this.http.get<ApiResponse<AllProductResponse>>(

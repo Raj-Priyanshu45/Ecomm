@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ProductService } from '../services/product.service';
 import { HttpClient } from '@angular/common/http';
+import { ToastService } from '../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-variant-manager',
@@ -38,6 +39,8 @@ export class VariantManager implements OnInit {
     private productService: ProductService,
     private http: HttpClient
   ) {}
+
+  private toast = inject(ToastService);
 
   ngOnInit() {
     this.productId = +this.route.snapshot.paramMap.get('productId')!;
@@ -85,7 +88,8 @@ export class VariantManager implements OnInit {
       },
       error: (err) => {
         this.submitting = false;
-        alert('Failed to add variant: ' + (err.error?.message || err.message));
+        const msg = err.error?.mess?.[0] || 'Could not add variant. Please check the details and try again.';
+        this.toast.error(msg);
       }
     });
   }
@@ -106,8 +110,8 @@ export class VariantManager implements OnInit {
 
   savePrice(v: any) {
     this.productService.updateVariantPrice(this.productId, v.id, this.editPrice).subscribe({
-      next: () => { this.editingPriceId = null; v.price = this.editPrice; },
-      error: () => alert('Failed to update price')
+      next: () => { this.editingPriceId = null; v.price = this.editPrice; this.toast.success('Price updated successfully.'); },
+      error: () => this.toast.error('Could not update the price. Please try again.')
     });
   }
 
@@ -118,16 +122,16 @@ export class VariantManager implements OnInit {
 
   saveStock(v: any) {
     this.productService.updateVariantStock(this.productId, v.id, this.editStock).subscribe({
-      next: () => { this.editingStockId = null; v.quantity = this.editStock; },
-      error: () => alert('Failed to update stock')
+      next: () => { this.editingStockId = null; v.quantity = this.editStock; this.toast.success('Stock updated successfully.'); },
+      error: () => this.toast.error('Could not update the stock quantity. Please try again.')
     });
   }
 
   deleteVariant(v: any) {
     if (!confirm(`Delete variant "${v.key}: ${v.value}"?`)) return;
     this.productService.deleteVariant(this.productId, v.id).subscribe({
-      next: () => this.loadVariants(),
-      error: () => alert('Failed to delete variant')
+      next: () => { this.toast.success('Variant deleted successfully.'); this.loadVariants(); },
+      error: () => this.toast.error('Could not delete the variant. Please try again.')
     });
   }
 }

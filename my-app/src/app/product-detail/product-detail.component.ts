@@ -8,6 +8,7 @@ import { CartService } from '../features/cart/cart.service';
 import { ReviewService } from '../services/review.service';
 import { SingleProductResponse, ReviewResponse, CreateReviewRequest } from '../models/models';
 import { StarRatingComponent } from '../shared/components/star-rating/star-rating.component';
+import { ToastService } from '../shared/services/toast.service';
 
 @Component({
   selector: 'app-product-detail',
@@ -22,6 +23,7 @@ export class ProductDetailComponent implements OnInit {
   private cartService = inject(CartService);
   private reviewService = inject(ReviewService);
   private oidc = inject(OidcSecurityService);
+  private toast = inject(ToastService);
 
   product: SingleProductResponse | null = null;
   productId!: number;
@@ -88,7 +90,10 @@ export class ProductDetailComponent implements OnInit {
           error: () => this.fullVariants = []
         });
       },
-      error: () => (this.loading = false),
+      error: () => {
+        this.loading = false;
+        this.toast.error('Unable to load product details. Please try refreshing the page.');
+      },
     });
   }
 
@@ -124,11 +129,11 @@ export class ProductDetailComponent implements OnInit {
       if (match) {
         reqVariantId = match.id;
       } else {
-        alert('Please select a valid variant combination.');
+        this.toast.warning('The selected option is not available. Please choose another combination.');
         return;
       }
     } else if (this.product?.varients && Object.keys(this.product.varients).length > 0) {
-      alert('Please select a variant option.');
+      this.toast.warning('Please select a variant option before adding to cart.');
       return;
     }
 
@@ -208,8 +213,11 @@ export class ProductDetailComponent implements OnInit {
   deleteReview(reviewId: number): void {
     if (!confirm('Are you sure you want to delete this review?')) return;
     this.reviewService.deleteReview(this.productId, reviewId).subscribe({
-      next: () => this.loadReviews(),
-      error: () => alert('Failed to delete review')
+      next: () => {
+        this.toast.success('Your review has been deleted.');
+        this.loadReviews();
+      },
+      error: () => this.toast.error('Could not delete your review. Please try again.')
     });
   }
 }

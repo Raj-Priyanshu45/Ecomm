@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 
 export interface CreateProductRequest {
   name: string;
@@ -26,7 +27,7 @@ export interface CreateProductResponse {
   providedIn: 'root',
 })
 export class ProductService {
-  private baseUrl = 'http://localhost:8080/api/products';
+  private baseUrl = `${environment.apiUrl}/api/products`;
 
   constructor(private http: HttpClient) {}
 
@@ -62,7 +63,7 @@ export class ProductService {
   }
 
   getProductVariants(productId: number): Observable<any[]> {
-    return this.http.get<any[]>(`http://localhost:8080/api/browse/products/${productId}/variants`);
+    return this.http.get<any[]>(`${environment.apiUrl}/api/browse/products/${productId}/variants`);
   }
 
   replaceImage(productId: number, imageId: number, file: File): Observable<any> {

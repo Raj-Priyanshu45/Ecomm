@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface Address {
   id: number;
@@ -25,7 +26,7 @@ export interface AddressRequest {
 @Injectable({ providedIn: 'root' })
 export class AddressService {
   private http = inject(HttpClient);
-  private baseUrl = 'http://localhost:8080/api/users/me/addresses';
+  private baseUrl = `${environment.apiUrl}/api/users/me/addresses`;
 
   getAddresses(): Observable<Address[]> {
     return this.http.get<Address[]>(this.baseUrl);
