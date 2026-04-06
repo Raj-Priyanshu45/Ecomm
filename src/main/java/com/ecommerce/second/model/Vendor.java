@@ -93,4 +93,7 @@ public class Vendor {
 
     @LastModifiedDate
     private LocalDateTime updatedAt;
+
+    @Column(name = "business_name")
+    private String businessName;
 }

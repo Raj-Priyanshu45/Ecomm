@@ -88,6 +88,7 @@ public class VendorService {
                 .city(req.getCity())
                 .state(req.getState())
                 .pincode(req.getPincode())
+                .businessName(req.getBusinessName())
                 .status(VendorStatus.PENDING)
                 .build());
 
