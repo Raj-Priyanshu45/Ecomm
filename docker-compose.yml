@@ -2,7 +2,7 @@ services:
 
   keycloak-mysql:
     container_name: keycloak-ecom
-    image: mysql:8
+    image: mysql:latest
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: keycloak
