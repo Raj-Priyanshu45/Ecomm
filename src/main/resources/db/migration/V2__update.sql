@@ -1,25 +1,53 @@
 -- ================================================================
--- V2__update.sql (fixed for Railway + MySQL strict mode)
+-- V2__update.sql — MySQL 9.4 compatible, fully idempotent
+-- Uses PREPARE/EXECUTE with information_schema checks because
+-- MySQL 9.4 does NOT support "DROP COLUMN IF EXISTS" syntax (error 1064).
+-- Safe to re-run: every statement checks state before applying.
 -- ================================================================
 
--- 1. Drop payment columns (safe)
-ALTER TABLE orders DROP COLUMN IF EXISTS payment_id;
-ALTER TABLE orders DROP COLUMN IF EXISTS payment_confirmed;
+-- 1. Drop payment_id from orders (if it still exists)
+SET @c = (SELECT COUNT(*) FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'orders' AND COLUMN_NAME = 'payment_id');
+PREPARE s FROM IF(@c > 0, 'ALTER TABLE orders DROP COLUMN payment_id', 'SELECT 1');
+EXECUTE s;
+DEALLOCATE PREPARE s;
 
--- 2. Add public_id to product_images
-ALTER TABLE product_images ADD COLUMN IF NOT EXISTS public_id VARCHAR(255);
+-- 2. Drop payment_confirmed from orders (if it still exists)
+SET @c = (SELECT COUNT(*) FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'orders' AND COLUMN_NAME = 'payment_confirmed');
+PREPARE s FROM IF(@c > 0, 'ALTER TABLE orders DROP COLUMN payment_confirmed', 'SELECT 1');
+EXECUTE s;
+DEALLOCATE PREPARE s;
 
--- 3. Add public_id to varient_image
-ALTER TABLE varient_image ADD COLUMN IF NOT EXISTS public_id VARCHAR(255);
+-- 3. Add public_id to product_images (if missing)
+SET @c = (SELECT COUNT(*) FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'product_images' AND COLUMN_NAME = 'public_id');
+PREPARE s FROM IF(@c = 0, 'ALTER TABLE product_images ADD COLUMN public_id VARCHAR(255)', 'SELECT 1');
+EXECUTE s;
+DEALLOCATE PREPARE s;
 
--- 4. Add business_name to vendor
-ALTER TABLE vendor ADD COLUMN IF NOT EXISTS business_name VARCHAR(255);
+-- 4. Add public_id to varient_image (if missing)
+SET @c = (SELECT COUNT(*) FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'varient_image' AND COLUMN_NAME = 'public_id');
+PREPARE s FROM IF(@c = 0, 'ALTER TABLE varient_image ADD COLUMN public_id VARCHAR(255)', 'SELECT 1');
+EXECUTE s;
+DEALLOCATE PREPARE s;
 
--- 5. Create inventory sku index (idempotent - drop first in case of partial previous run)
-DROP INDEX IF EXISTS idx_inventory_sku ON inventory;
-CREATE INDEX idx_inventory_sku ON inventory (sku_code);
+-- 5. Add business_name to vendor (if missing)
+SET @c = (SELECT COUNT(*) FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'vendor' AND COLUMN_NAME = 'business_name');
+PREPARE s FROM IF(@c = 0, 'ALTER TABLE vendor ADD COLUMN business_name VARCHAR(255)', 'SELECT 1');
+EXECUTE s;
+DEALLOCATE PREPARE s;
 
--- 6. Fix VIEW creation (THIS WAS YOUR MAIN BUG)
+-- 6. Create inventory sku index (if missing)
+SET @c = (SELECT COUNT(*) FROM information_schema.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'inventory' AND INDEX_NAME = 'idx_inventory_sku');
+PREPARE s FROM IF(@c = 0, 'CREATE INDEX idx_inventory_sku ON inventory (sku_code)', 'SELECT 1');
+EXECUTE s;
+DEALLOCATE PREPARE s;
+
+-- 7. Drop and recreate support_order_view (idempotent via DROP IF EXISTS)
 DROP VIEW IF EXISTS support_order_view;
 
 CREATE VIEW support_order_view AS
@@ -51,6 +79,5 @@ WHERE o.status IN (
     'REFUNDED'
 );
 
--- 7. Ensure status column default
-ALTER TABLE orders
-MODIFY COLUMN status VARCHAR(50) NOT NULL DEFAULT 'PLACED';
+-- 8. Ensure status column default (MODIFY is idempotent)
+ALTER TABLE orders MODIFY COLUMN status VARCHAR(50) NOT NULL DEFAULT 'PLACED';
