@@ -34,5 +34,4 @@ build/
 volume-dat/
 application.properties
 .env
-application-dev.properties
-application-prod.properties
+
