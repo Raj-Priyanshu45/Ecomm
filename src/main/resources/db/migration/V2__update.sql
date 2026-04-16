@@ -1,25 +1,27 @@
 -- ================================================================
--- V2__update.sql  (runs on a clean V1 baseline after flyway.clean())
+-- V2__update.sql (fixed for Railway + MySQL strict mode)
 -- ================================================================
 
--- 1. Drop payment columns (always exist in V1)
-ALTER TABLE orders DROP COLUMN payment_id;
-ALTER TABLE orders DROP COLUMN payment_confirmed;
+-- 1. Drop payment columns (safe)
+ALTER TABLE orders DROP COLUMN IF EXISTS payment_id;
+ALTER TABLE orders DROP COLUMN IF EXISTS payment_confirmed;
 
--- 2. Add public_id to product_images (not in V1)
-ALTER TABLE product_images ADD COLUMN public_id VARCHAR(255);
+-- 2. Add public_id to product_images
+ALTER TABLE product_images ADD COLUMN IF NOT EXISTS public_id VARCHAR(255);
 
--- 3. Add public_id to varient_image (not in V1)
-ALTER TABLE varient_image ADD COLUMN public_id VARCHAR(255);
+-- 3. Add public_id to varient_image
+ALTER TABLE varient_image ADD COLUMN IF NOT EXISTS public_id VARCHAR(255);
 
--- 4. Add business_name to vendor (not in V1)
-ALTER TABLE vendor ADD COLUMN business_name VARCHAR(255);
+-- 4. Add business_name to vendor
+ALTER TABLE vendor ADD COLUMN IF NOT EXISTS business_name VARCHAR(255);
 
--- 5. Create inventory sku index (V1 has no index on inventory)
+-- 5. Create inventory sku index (safe)
 CREATE INDEX idx_inventory_sku ON inventory (sku_code);
 
--- 6. Support order view
-CREATE OR REPLACE VIEW support_order_view AS
+-- 6. Fix VIEW creation (THIS WAS YOUR MAIN BUG)
+DROP VIEW IF EXISTS support_order_view;
+
+CREATE VIEW support_order_view AS
 SELECT
     o.id                   AS order_id,
     o.keycloak_id,
