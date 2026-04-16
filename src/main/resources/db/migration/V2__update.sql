@@ -15,7 +15,8 @@ ALTER TABLE varient_image ADD COLUMN IF NOT EXISTS public_id VARCHAR(255);
 -- 4. Add business_name to vendor
 ALTER TABLE vendor ADD COLUMN IF NOT EXISTS business_name VARCHAR(255);
 
--- 5. Create inventory sku index (safe)
+-- 5. Create inventory sku index (idempotent - drop first in case of partial previous run)
+DROP INDEX IF EXISTS idx_inventory_sku ON inventory;
 CREATE INDEX idx_inventory_sku ON inventory (sku_code);
 
 -- 6. Fix VIEW creation (THIS WAS YOUR MAIN BUG)
