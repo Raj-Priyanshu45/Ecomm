@@ -1,49 +1,54 @@
 -- ================================================================
 -- V2__update.sql — MySQL 9.4 compatible, fully idempotent
--- Uses PREPARE/EXECUTE with information_schema checks because
--- MySQL 9.4 does NOT support "DROP COLUMN IF EXISTS" syntax (error 1064).
--- Safe to re-run: every statement checks state before applying.
+-- PREPARE...FROM only accepts a string literal or @variable — NOT IF().
+-- So we SET @sql = IF(...) first, then PREPARE s FROM @sql.
 -- ================================================================
 
 -- 1. Drop payment_id from orders (if it still exists)
 SET @c = (SELECT COUNT(*) FROM information_schema.COLUMNS
     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'orders' AND COLUMN_NAME = 'payment_id');
-PREPARE s FROM IF(@c > 0, 'ALTER TABLE orders DROP COLUMN payment_id', 'SELECT 1');
+SET @sql = IF(@c > 0, 'ALTER TABLE orders DROP COLUMN payment_id', 'SELECT 1');
+PREPARE s FROM @sql;
 EXECUTE s;
 DEALLOCATE PREPARE s;
 
 -- 2. Drop payment_confirmed from orders (if it still exists)
 SET @c = (SELECT COUNT(*) FROM information_schema.COLUMNS
     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'orders' AND COLUMN_NAME = 'payment_confirmed');
-PREPARE s FROM IF(@c > 0, 'ALTER TABLE orders DROP COLUMN payment_confirmed', 'SELECT 1');
+SET @sql = IF(@c > 0, 'ALTER TABLE orders DROP COLUMN payment_confirmed', 'SELECT 1');
+PREPARE s FROM @sql;
 EXECUTE s;
 DEALLOCATE PREPARE s;
 
 -- 3. Add public_id to product_images (if missing)
 SET @c = (SELECT COUNT(*) FROM information_schema.COLUMNS
     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'product_images' AND COLUMN_NAME = 'public_id');
-PREPARE s FROM IF(@c = 0, 'ALTER TABLE product_images ADD COLUMN public_id VARCHAR(255)', 'SELECT 1');
+SET @sql = IF(@c = 0, 'ALTER TABLE product_images ADD COLUMN public_id VARCHAR(255)', 'SELECT 1');
+PREPARE s FROM @sql;
 EXECUTE s;
 DEALLOCATE PREPARE s;
 
 -- 4. Add public_id to varient_image (if missing)
 SET @c = (SELECT COUNT(*) FROM information_schema.COLUMNS
     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'varient_image' AND COLUMN_NAME = 'public_id');
-PREPARE s FROM IF(@c = 0, 'ALTER TABLE varient_image ADD COLUMN public_id VARCHAR(255)', 'SELECT 1');
+SET @sql = IF(@c = 0, 'ALTER TABLE varient_image ADD COLUMN public_id VARCHAR(255)', 'SELECT 1');
+PREPARE s FROM @sql;
 EXECUTE s;
 DEALLOCATE PREPARE s;
 
 -- 5. Add business_name to vendor (if missing)
 SET @c = (SELECT COUNT(*) FROM information_schema.COLUMNS
     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'vendor' AND COLUMN_NAME = 'business_name');
-PREPARE s FROM IF(@c = 0, 'ALTER TABLE vendor ADD COLUMN business_name VARCHAR(255)', 'SELECT 1');
+SET @sql = IF(@c = 0, 'ALTER TABLE vendor ADD COLUMN business_name VARCHAR(255)', 'SELECT 1');
+PREPARE s FROM @sql;
 EXECUTE s;
 DEALLOCATE PREPARE s;
 
 -- 6. Create inventory sku index (if missing)
 SET @c = (SELECT COUNT(*) FROM information_schema.STATISTICS
     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'inventory' AND INDEX_NAME = 'idx_inventory_sku');
-PREPARE s FROM IF(@c = 0, 'CREATE INDEX idx_inventory_sku ON inventory (sku_code)', 'SELECT 1');
+SET @sql = IF(@c = 0, 'CREATE INDEX idx_inventory_sku ON inventory (sku_code)', 'SELECT 1');
+PREPARE s FROM @sql;
 EXECUTE s;
 DEALLOCATE PREPARE s;
 
