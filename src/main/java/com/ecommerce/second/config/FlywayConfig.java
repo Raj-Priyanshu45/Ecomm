@@ -1,11 +1,11 @@
 package com.ecommerce.second.config;
 
-import org.flywaydb.core.Flyway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 /**
  * Flyway 11 compatible migration strategy.
@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Configuration;
  * migrations from V1.  This is intentionally dev-only behaviour;
  * remove / guard with @Profile("dev") before going to production.
  */
+@Profile("dev")
 @Configuration
 public class FlywayConfig {
 

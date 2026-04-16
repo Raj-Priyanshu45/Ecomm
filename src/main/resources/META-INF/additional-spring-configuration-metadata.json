@@ -13,5 +13,35 @@
     "name": "api_secret",
     "type": "java.lang.String",
     "description": "A description for 'api_secret'"
+  },
+  {
+    "name": "cloudName",
+    "type": "java.lang.String",
+    "description": "A description for 'cloudName'"
+  },
+  {
+    "name": "mail.username",
+    "type": "java.lang.String",
+    "description": "A description for 'mail.username'"
+  },
+  {
+    "name": "mail.password",
+    "type": "java.lang.String",
+    "description": "A description for 'mail.password'"
+  },
+  {
+    "name": "swagger-ui.path",
+    "type": "java.lang.String",
+    "description": "A description for 'swagger-ui.path'"
+  },
+  {
+    "name": "swagger-ui.path",
+    "type": "java.lang.String",
+    "description": "A description for 'swagger-ui.path'"
+  },
+  {
+    "name": "docs.path",
+    "type": "java.lang.String",
+    "description": "A description for 'docs.path'"
   }
 ]}
