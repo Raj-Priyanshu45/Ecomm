@@ -5,7 +5,7 @@ const getBaseUrl = () => {
   if (typeof window !== 'undefined') {
     return window.location.origin;
   }
-  return 'http://localhost:4200'; // fallback for SSR
+  return environment.appUrl; // fallback for SSR uses the configured environment
 };
 
 export const authConfig: PassedInitialConfig = {
