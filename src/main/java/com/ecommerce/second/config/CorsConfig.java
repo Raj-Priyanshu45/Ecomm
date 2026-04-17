@@ -12,7 +12,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 public class CorsConfig {
 
-    @Value("${FRONTEND_URL:http://localhost:4200}")
+    @Value("${FRONTEND_URL}")
     private String frontendUrl;
 
     @Bean
@@ -22,7 +22,6 @@ public class CorsConfig {
         // Allow configured frontend url + localhost fallbacks
         config.setAllowedOriginPatterns(List.of(
             frontendUrl,
-            "http://localhost:*",
             "http://127.0.0.1:*"
         ));
 
