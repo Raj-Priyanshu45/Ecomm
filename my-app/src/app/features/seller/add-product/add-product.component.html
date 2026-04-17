@@ -102,13 +102,23 @@
                              focus:bg-[#0f172a]/80 shadow-inner transition-all resize-none placeholder:text-white/20"></textarea>
           </div>
 
-          <!-- Price and Quantity Grid -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <!-- Price, Discount, and Quantity Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
             <div>
               <label class="block text-xs font-bold tracking-wider text-indigo-300 uppercase mb-2 ml-1">Price <span class="text-fuchsia-400">*</span></label>
               <div class="relative group">
                 <span class="absolute left-5 top-1/2 -translate-y-1/2 text-white/40 font-bold group-focus-within:text-fuchsia-400 transition-colors">₹</span>
                 <input [(ngModel)]="price" type="number" min="1" placeholder="0.00"
+                       class="w-full pl-10 pr-5 py-4 rounded-2xl bg-[#0f172a]/50 border border-white/10 text-white
+                              focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/50
+                              focus:bg-[#0f172a]/80 shadow-inner transition-all placeholder:text-white/20" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-bold tracking-wider text-indigo-300 uppercase mb-2 ml-1">Discount (%)</label>
+              <div class="relative group">
+                <span class="absolute left-5 top-1/2 -translate-y-1/2 text-white/40 font-bold group-focus-within:text-fuchsia-400 transition-colors">%</span>
+                <input [(ngModel)]="discount" type="number" min="0" max="100" placeholder="0"
                        class="w-full pl-10 pr-5 py-4 rounded-2xl bg-[#0f172a]/50 border border-white/10 text-white
                               focus:outline-none focus:ring-2 focus:ring-fuchsia-500/50 focus:border-fuchsia-500/50
                               focus:bg-[#0f172a]/80 shadow-inner transition-all placeholder:text-white/20" />

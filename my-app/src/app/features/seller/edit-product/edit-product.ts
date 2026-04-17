@@ -18,6 +18,7 @@ export class EditProduct implements OnInit {
   name = '';
   description = '';
   price: number | null = null;
+  discount: number | null = null;
   quantity: number | null = null;
   tagsInput = '';
 
@@ -44,6 +45,7 @@ export class EditProduct implements OnInit {
         this.name = res.name;
         this.description = res.description;
         this.price = res.price;
+        this.discount = res.discount;
         this.quantity = res.count;
         this.tagsInput = res.tags ? res.tags.map((t: any) => t.name).join(', ') : '';
         this.loading = false;
@@ -74,6 +76,7 @@ export class EditProduct implements OnInit {
         name: this.name,
         description: this.description,
         price: this.price,
+        discount: this.discount,
         quantity: this.quantity,
         tags,
       })
