@@ -1,5 +1,7 @@
 package com.ecommerce.second.config;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -15,15 +17,26 @@ public class CorsConfig {
     @Value("${FRONTEND_URL}")
     private String frontendUrl;
 
+    @Value("${EXTRA_CORS_ORIGINS:}")
+    private String extraOrigins;
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // Allow configured frontend url + localhost fallbacks
-        config.setAllowedOriginPatterns(List.of(
-            frontendUrl,
-            "http://127.0.0.1:*"
-        ));
+         List<String> origins = new ArrayList<>();
+        origins.add(frontendUrl);
+        origins.add("http://localhost:*");
+        origins.add("http://127.0.0.1:*");
+
+        // Splits "https://a.com,https://b.com" if you set the env var
+        if (!extraOrigins.isBlank()) {
+            Arrays.stream(extraOrigins.split(","))
+                .map(String::trim)
+                .forEach(origins::add);
+        }
+
+        config.setAllowedOriginPatterns(origins);
 
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
 
