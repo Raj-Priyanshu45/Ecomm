@@ -131,9 +131,13 @@ public class CartService {
     // Remove a single item
     // ─────────────────────────────────────────────────────────────
 
-    public CartResponse removeItem(int cartItemId, Authentication auth) {
+     public CartResponse removeItem(int cartItemId, Authentication auth) {
         CartItem item = getCartItemAndVerifyOwner(cartItemId, auth.getName());
+        
+        Cart cart = item.getCart();
+        cart.getItems().remove(item);
         cartItemRepo.delete(item);
+        
         log.debug("Cart item removed: id={}", cartItemId);
         return toCartResponse(cartRepo.findByKeycloakId(auth.getName()).orElseThrow());
     }
