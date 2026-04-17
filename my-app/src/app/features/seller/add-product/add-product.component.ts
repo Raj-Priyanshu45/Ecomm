@@ -37,6 +37,7 @@ export class AddProductComponent {
   name = '';
   description = '';
   price: number | null = null;
+  discount: number | null = null;
   quantity: number | null = null;
   tagsInput = '';
 
@@ -144,6 +145,7 @@ export class AddProductComponent {
         name: this.name,
         description: this.description,
         price: this.price,
+        discount: this.discount,
         quantity: this.quantity,
         tags,
       })
