@@ -1,233 +1,254 @@
-<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="min-h-screen bg-slate-950">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-  @if (loading) {
-    <div class="animate-pulse grid grid-cols-1 lg:grid-cols-2 gap-10">
-      <div class="bg-gray-100 aspect-square rounded-2xl"></div>
-      <div class="space-y-4">
-        <div class="h-8 bg-gray-100 rounded-xl w-3/4"></div>
-        <div class="h-4 bg-gray-100 rounded w-1/2"></div>
-        <div class="h-20 bg-gray-100 rounded-xl"></div>
+    <!-- Back link -->
+    <a routerLink="/" class="inline-flex items-center gap-2 text-slate-500 hover:text-slate-300
+                              text-sm transition-colors mb-8 group">
+      <svg class="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      </svg>
+      Back to Products
+    </a>
+
+    @if (loading) {
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 animate-pulse">
+        <div class="skeleton aspect-square rounded-3xl"></div>
+        <div class="space-y-4 pt-4">
+          <div class="skeleton h-10 rounded-xl w-3/4"></div>
+          <div class="skeleton h-4 rounded w-1/2"></div>
+          <div class="skeleton h-24 rounded-xl"></div>
+          <div class="skeleton h-12 rounded-xl"></div>
+        </div>
       </div>
-    </div>
-  } @else if (product) {
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+    } @else if (product) {
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
 
-      <!-- Images -->
-      <div>
-        <div class="aspect-square bg-gray-50 rounded-2xl overflow-hidden mb-3">
-          @if (selectedImage) {
-            <img [src]="getImageUrl(selectedImage)" alt="product"
-                 class="w-full h-full object-cover"/>
+        <!-- ── Image Gallery ── -->
+        <div class="space-y-3">
+          <div class="glass-card rounded-3xl overflow-hidden aspect-square">
+            @if (selectedImage) {
+              <img [src]="getImageUrl(selectedImage)" [alt]="product.name"
+                   class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"/>
+            }
+          </div>
+          @if (product.imageUrl.length > 1) {
+            <div class="flex gap-2 flex-wrap">
+              @for (img of product.imageUrl; track $index) {
+                <div (click)="selectedImage = img"
+                     class="w-16 h-16 rounded-xl overflow-hidden cursor-pointer transition-all duration-200"
+                     [class]="selectedImage === img
+                       ? 'ring-2 ring-indigo-500 ring-offset-2 ring-offset-slate-950 scale-105'
+                       : 'ring-1 ring-white/10 hover:ring-white/20 opacity-70 hover:opacity-100'">
+                  <img [src]="getImageUrl(img)" class="w-full h-full object-cover"/>
+                </div>
+              }
+            </div>
           }
         </div>
-        @if (product.imageUrl.length > 1) {
-          <div class="flex gap-2 flex-wrap">
-            @for (img of product.imageUrl; track $index) {
-              <div
-                (click)="selectedImage = img"
-                [class]="selectedImage === img ? 'ring-2 ring-indigo-500' : 'ring-1 ring-gray-200'"
-                class="w-16 h-16 rounded-xl overflow-hidden cursor-pointer">
-                <img [src]="getImageUrl(img)" class="w-full h-full object-cover"/>
-              </div>
-            }
+
+        <!-- ── Product Info ── -->
+        <div class="space-y-6">
+
+          <!-- Title + ratings -->
+          <div>
+            <h1 class="text-3xl font-black text-white leading-tight">{{ product.name }}</h1>
+            <div class="flex items-center gap-3 mt-3 flex-wrap">
+              <app-star-rating [rating]="product.rating || 0" [showCount]="false"/>
+              <span class="text-sm text-slate-500">{{ product.reviewCount || 0 }} reviews</span>
+              <div class="w-px h-4 bg-white/10"></div>
+              <span class="text-xs text-slate-500">Seller: <span class="text-slate-300 font-medium">{{ product.sellerId }}</span></span>
+            </div>
           </div>
-        }
+
+          <!-- Price -->
+          <div class="glass-card rounded-2xl p-5">
+            @if (product.discount && product.discount > 0) {
+              <div class="flex items-start gap-3">
+                <div>
+                  <span class="text-slate-500 text-sm line-through block">
+                    {{ product.price | currency:'INR':'₹':'1.0-0' }}
+                  </span>
+                  <span class="text-4xl font-black gradient-text">
+                    {{ discountedPrice | currency:'INR':'₹':'1.0-0' }}
+                  </span>
+                </div>
+                <span class="mt-1 text-xs font-black px-2.5 py-1 rounded-lg
+                             bg-gradient-to-r from-rose-500/20 to-pink-500/20
+                             border border-rose-500/30 text-rose-400">
+                  {{ product.discount }}% OFF
+                </span>
+              </div>
+            } @else {
+              <span class="text-4xl font-black text-white">{{ product.price | currency:'INR':'₹':'1.0-0' }}</span>
+            }
+
+            <div class="flex items-center gap-2 mt-3">
+              @if (!isOutOfStock) {
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold badge-success">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  In Stock
+                </span>
+              } @else {
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold badge-error">
+                  Out of Stock
+                </span>
+              }
+              <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold badge-info">
+                🚚 Free Shipping
+              </span>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <p class="text-slate-400 leading-relaxed text-sm">{{ product.description }}</p>
+
+          <!-- Tags -->
+          @if (product.tags.length) {
+            <div class="flex flex-wrap gap-2">
+              @for (tag of product.tags; track tag.id) {
+                <a [routerLink]="['/products/tag', tag.name.toLowerCase()]"
+                   class="text-xs px-3 py-1.5 rounded-full
+                          bg-indigo-500/10 hover:bg-indigo-500/20
+                          border border-indigo-500/20 hover:border-indigo-500/40
+                          text-indigo-400 hover:text-indigo-300
+                          transition-all duration-200">
+                  {{ tag.name }}
+                </a>
+              }
+            </div>
+          }
+
+          <!-- Variants -->
+          @for (entry of product.varients | keyvalue; track entry.key) {
+            <div>
+              <p class="text-sm font-semibold text-slate-300 mb-2.5 capitalize">{{ entry.key }}</p>
+              <div class="flex flex-wrap gap-2">
+                @for (val of entry.value; track val) {
+                  <button (click)="selectVariant(entry.key, val)"
+                          [ngClass]="isVariantSelected(entry.key, val)
+                            ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white border-indigo-500/50 shadow-lg shadow-indigo-500/20'
+                            : 'glass text-slate-300 hover:text-white hover:border-white/20'"
+                          class="px-4 py-2 rounded-xl border text-sm font-medium transition-all duration-200">
+                    {{ val }}
+                  </button>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Qty + Add to Cart -->
+          <div class="flex items-center gap-3">
+            <div class="flex items-center glass rounded-xl overflow-hidden border border-white/10">
+              <button (click)="quantity = quantity > 1 ? quantity - 1 : 1"
+                      class="px-4 py-3 hover:bg-white/5 text-slate-300 hover:text-white transition-colors text-lg font-bold">
+                −
+              </button>
+              <span class="px-5 text-sm font-bold text-white">{{ quantity }}</span>
+              <button (click)="quantity = quantity + 1"
+                      class="px-4 py-3 hover:bg-white/5 text-slate-300 hover:text-white transition-colors text-lg font-bold">
+                +
+              </button>
+            </div>
+            <button (click)="addToCart()" [disabled]="isOutOfStock"
+                    class="flex-1 btn-primary py-3.5 text-sm font-bold disabled:opacity-40 disabled:cursor-not-allowed">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.29 2.29c-.63.63-.18 1.71.71 1.71H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+              </svg>
+              {{ isOutOfStock ? 'Out of Stock' : 'Add to Cart' }}
+            </button>
+          </div>
+
+          @if (cartMessage) {
+            <div class="flex items-center justify-between p-4 glass-card rounded-xl border-l-4 border-emerald-500 animate-fade-in">
+              <span class="text-sm font-medium text-emerald-400 flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                </svg>
+                {{ cartMessage }}
+              </span>
+              <button (click)="goToCart()" class="btn-primary text-xs px-4 py-2">View Cart</button>
+            </div>
+          }
+        </div>
       </div>
 
-      <!-- Info -->
-      <div class="space-y-5">
-        <div>
-          <h1 class="text-3xl font-black text-gray-900 leading-tight mb-2">{{ product.name }}</h1>
-          
-          <div class="flex items-center gap-3 mb-4">
-            <app-star-rating [rating]="product.rating || 0" [showCount]="false"></app-star-rating>
-            <span class="text-sm font-medium text-gray-500">
-              {{ product.reviewCount || 0 }} Reviews
-            </span>
-            <span class="text-gray-300">•</span>
-            <p class="text-sm text-gray-500">Sold by: <span class="font-semibold text-gray-900">{{ product.sellerId }}</span></p>
-          </div>
-          
-          <div class="mb-5 flex items-baseline gap-3 flex-wrap">
-             @if (product.discount && product.discount > 0) {
-               <div class="flex flex-col">
-                 <span class="text-sm text-gray-400 line-through">{{ product.price | currency:'INR':'symbol':'1.0-0' }}</span>
-                 <div class="flex items-center gap-3">
-                   <span class="text-4xl font-extrabold text-gray-900">{{ discountedPrice | currency:'INR':'symbol':'1.0-0' }}</span>
-                   <span class="text-sm font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-100">{{ product.discount }}% OFF</span>
-                 </div>
-               </div>
-             } @else {
-               <span class="text-4xl font-extrabold text-gray-900">{{ product.price | currency:'INR':'symbol':'1.0-0' }}</span>
-             }
-             <span class="text-sm font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">Free Shipping</span>
-          </div>
+      <!-- ── Reviews ── -->
+      <div class="mt-20">
+        <div class="neon-divider mb-10"></div>
+        <h2 class="text-2xl font-black text-white mb-8">Customer Reviews</h2>
 
-          <div class="mb-6">
-            @if (!isOutOfStock) {
-              <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                In Stock
-              </span>
-            } @else {
-              <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-700 border border-rose-100">
-                <span class="w-2 h-2 rounded-full bg-rose-500"></span>
-                Out of Stock
-              </span>
-            }
-          </div>
-        </div>
-
-        <p class="text-gray-600 leading-relaxed">{{ product.description }}</p>
-
-        <!-- Tags -->
-        @if (product.tags.length) {
-          <div class="flex flex-wrap gap-2">
-            @for (tag of product.tags; track tag.id) {
-              <a [routerLink]="['/products/tag', tag.name.toLowerCase()]" class="text-xs px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-full transition-colors cursor-pointer">
-                {{ tag.name }}
-              </a>
-            }
-          </div>
-        }
-
-        <!-- Variants -->
-        @for (entry of product.varients | keyvalue; track entry.key) {
-          <div>
-            <p class="text-sm font-semibold text-gray-700 mb-2 capitalize">{{ entry.key }}</p>
-            <div class="flex flex-wrap gap-2">
-              @for (val of entry.value; track val) {
-                <button
-                  (click)="selectVariant(entry.key, val)"
-                  [ngClass]="isVariantSelected(entry.key, val)
-                    ? 'bg-indigo-600 text-white border-indigo-600'
-                    : 'bg-white text-gray-700 border-gray-200 hover:border-indigo-300'"
-                  class="px-4 py-2 rounded-lg border text-sm font-medium transition-colors">
-                  {{ val }}
+        @if (isAuthenticated) {
+          <div class="glass-card rounded-2xl p-6 mb-8">
+            <h3 class="font-semibold text-slate-200 mb-4">Write a Review</h3>
+            <div class="flex gap-2 mb-4">
+              @for (star of [1,2,3,4,5]; track star) {
+                <button (click)="newRating = star" class="hover:scale-110 transition-transform">
+                  <svg [class]="star <= newRating ? 'text-amber-400' : 'text-slate-700'"
+                       class="w-7 h-7 fill-current transition-colors" viewBox="0 0 20 20">
+                    <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
+                  </svg>
                 </button>
               }
             </div>
+            <textarea [(ngModel)]="newComment" rows="3" placeholder="Share your experience..."
+                      class="input-dark resize-none"></textarea>
+            @if (reviewError) { <p class="text-red-400 text-xs mt-2">{{ reviewError }}</p> }
+            @if (reviewSuccess) { <p class="text-emerald-400 text-xs mt-2">{{ reviewSuccess }}</p> }
+            <button (click)="submitReview()" class="btn-primary mt-4 text-sm px-5 py-2.5">Submit Review</button>
           </div>
         }
 
-        <!-- Qty + Add to cart -->
-        <div class="flex items-center gap-4">
-          <div class="flex items-center gap-2 border border-gray-200 rounded-xl overflow-hidden">
-            <button (click)="quantity = quantity > 1 ? quantity - 1 : 1"
-                    class="px-4 py-3 hover:bg-gray-50 text-lg font-bold">−</button>
-            <span class="px-3 text-sm font-semibold">{{ quantity }}</span>
-            <button (click)="quantity = quantity + 1"
-                    class="px-4 py-3 hover:bg-gray-50 text-lg font-bold">+</button>
-          </div>
-          <button
-            (click)="addToCart()"
-            [disabled]="isOutOfStock"
-            [ngClass]="isOutOfStock ? 'bg-gray-300 cursor-not-allowed text-gray-500' : 'bg-indigo-600 hover:bg-indigo-700 text-white'"
-            class="flex-1 py-3 rounded-xl font-semibold transition-colors">
-            {{ isOutOfStock ? 'Out of Stock' : 'Add to Cart' }}
-          </button>
-        </div>
+        @if (reviews.length === 0) {
+          <p class="text-slate-500 text-sm">No reviews yet. Be the first!</p>
+        } @else {
+          <div class="space-y-4">
+            @for (review of reviews; track review.reviewId) {
+              <div class="glass-card rounded-2xl p-5 card-hover">
+                <div class="flex items-center justify-between mb-3">
+                  <app-star-rating [rating]="review.rating" [showCount]="false"/>
+                  <div class="flex items-center gap-3">
+                    <span class="text-xs text-slate-600">{{ review.reviewerKeycloakId }}</span>
+                    @if (currentUserId === review.reviewerKeycloakId) {
+                      <div class="flex items-center gap-2 border-l border-white/10 pl-3">
+                        <button (click)="startEditReview(review)"
+                                class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold transition-colors">Edit</button>
+                        <button (click)="deleteReview(review.reviewId)"
+                                class="text-xs text-rose-400 hover:text-rose-300 font-semibold transition-colors">Delete</button>
+                      </div>
+                    }
+                  </div>
+                </div>
 
-        @if (cartMessage) {
-          <div class="flex items-center justify-between p-4 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-100 animate-fade-in shadow-sm">
-            <span class="font-medium flex items-center gap-2 text-sm">
-              <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-              {{ cartMessage }}
-            </span>
-            <button (click)="goToCart()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-colors shadow-sm whitespace-nowrap">
-              View Cart
-            </button>
+                @if (editingReviewId === review.reviewId) {
+                  <div class="mt-3 glass p-4 rounded-xl animate-fade-in">
+                    <div class="flex gap-1.5 mb-3">
+                      @for (star of [1,2,3,4,5]; track star) {
+                        <button (click)="editRating = star" class="hover:scale-110 transition-transform">
+                          <svg [class]="star <= editRating ? 'text-amber-400' : 'text-slate-700'"
+                               class="w-6 h-6 fill-current transition-colors" viewBox="0 0 20 20">
+                            <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
+                          </svg>
+                        </button>
+                      }
+                    </div>
+                    <textarea [(ngModel)]="editComment" rows="2" class="input-dark resize-none"></textarea>
+                    @if (editError) { <p class="text-rose-400 text-xs mt-2">{{ editError }}</p> }
+                    <div class="flex gap-2 mt-3">
+                      <button (click)="updateReview()" class="btn-primary text-xs px-4 py-2">Save</button>
+                      <button (click)="cancelEditReview()" class="btn-ghost text-xs px-4 py-2">Cancel</button>
+                    </div>
+                  </div>
+                } @else {
+                  @if (review.comment) {
+                    <p class="text-sm text-slate-400 leading-relaxed">{{ review.comment }}</p>
+                  }
+                }
+              </div>
+            }
           </div>
         }
       </div>
-    </div>
-
-    <!-- Reviews Section -->
-    <div class="mt-16 border-t border-gray-100 pt-10">
-      <h2 class="text-2xl font-black text-gray-900 mb-6">Customer Reviews</h2>
-
-      @if (isAuthenticated) {
-        <div class="bg-gray-50 rounded-2xl p-6 mb-8">
-          <h3 class="font-semibold text-gray-800 mb-4">Write a Review</h3>
-
-          <div class="flex gap-2 mb-4">
-            @for (star of [1,2,3,4,5]; track star) {
-              <button (click)="newRating = star">
-                <svg [class]="star <= newRating ? 'text-yellow-400' : 'text-gray-200'"
-                     class="w-7 h-7 fill-current transition-colors" viewBox="0 0 20 20">
-                  <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
-                </svg>
-              </button>
-            }
-          </div>
-
-          <textarea
-            [(ngModel)]="newComment"
-            rows="3"
-            placeholder="Share your experience..."
-            class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white resize-none">
-          </textarea>
-
-          @if (reviewError) {
-            <p class="text-red-500 text-xs mt-2">{{ reviewError }}</p>
-          }
-          @if (reviewSuccess) {
-            <p class="text-green-600 text-xs mt-2">{{ reviewSuccess }}</p>
-          }
-
-          <button (click)="submitReview()"
-                  class="mt-3 px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 transition-colors">
-            Submit Review
-          </button>
-        </div>
-      }
-
-      @if (reviews.length === 0) {
-        <p class="text-gray-400 text-sm">No reviews yet. Be the first!</p>
-      } @else {
-        <div class="space-y-4">
-          @for (review of reviews; track review.reviewId) {
-            <div class="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
-              <div class="flex items-center justify-between mb-3">
-                <app-star-rating [rating]="review.rating" [showCount]="false"/>
-                <div class="flex items-center gap-3">
-                  <span class="text-xs text-gray-400">{{ review.reviewerKeycloakId }}</span>
-                  @if (currentUserId === review.reviewerKeycloakId) {
-                    <div class="flex items-center gap-2 border-l border-gray-200 pl-3">
-                      <button (click)="startEditReview(review)" class="text-xs text-indigo-500 hover:text-indigo-600 font-semibold transition-colors">Edit</button>
-                      <button (click)="deleteReview(review.reviewId)" class="text-xs text-rose-500 hover:text-rose-600 font-semibold transition-colors">Delete</button>
-                    </div>
-                  }
-                </div>
-              </div>
-
-              @if (editingReviewId === review.reviewId) {
-                <div class="mt-3 bg-gray-50/50 p-4 rounded-xl border border-indigo-100 ring-1 ring-inset ring-indigo-50 animate-fade-in">
-                  <div class="flex gap-1.5 mb-3">
-                    @for (star of [1,2,3,4,5]; track star) {
-                      <button (click)="editRating = star" class="hover:scale-110 transition-transform">
-                        <svg [class]="star <= editRating ? 'text-yellow-400 drop-shadow-sm' : 'text-gray-200'" class="w-6 h-6 fill-current transition-colors" viewBox="0 0 20 20">
-                          <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
-                        </svg>
-                      </button>
-                    }
-                  </div>
-                  <textarea [(ngModel)]="editComment" rows="2" class="w-full px-3 py-2.5 border border-indigo-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white resize-none transition-shadow mb-1"></textarea>
-                  @if (editError) { <p class="text-rose-500 text-xs mt-1 mb-2 font-medium">{{ editError }}</p> }
-                  <div class="flex gap-2 mt-3">
-                    <button (click)="updateReview()" class="px-5 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 shadow-sm shadow-indigo-600/20 transition-all active:scale-95">Save Changes</button>
-                    <button (click)="cancelEditReview()" class="px-5 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-xs font-bold hover:bg-gray-50 hover:border-gray-400 transition-all active:scale-95">Cancel</button>
-                  </div>
-                </div>
-              } @else {
-                @if (review.comment) {
-                  <p class="text-sm text-gray-600 leading-relaxed">{{ review.comment }}</p>
-                }
-              }
-            </div>
-          }
-        </div>
-      }
-    </div>
-  }
+    }
+  </div>
 </div>

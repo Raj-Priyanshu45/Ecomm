@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { DecimalPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastService } from '../../../shared/services/toast.service';
+import { environment } from '../../../../environments/environment';
 
 interface VendorProfile {
   id: number;
@@ -313,7 +314,7 @@ interface Order {
 export class VendorDashboardComponent implements OnInit, OnDestroy {
   private http = inject(HttpClient);
   private toast = inject(ToastService);
-  private readonly base = 'http://localhost:8080';
+  private readonly base = environment.apiUrl;
 
   private pollingInterval: any;
 
@@ -368,7 +369,7 @@ export class VendorDashboardComponent implements OnInit, OnDestroy {
           this.notifications = res.content ?? [];
           this.unreadCount = this.notifications.filter((n) => !n.read).length;
         },
-        error: () => {},
+        error: () => { },
       });
   }
 

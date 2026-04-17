@@ -6,6 +6,7 @@ import { ProductCardComponent } from '../../../shared/components/product-card/pr
 import { AllProductResponse } from '../../../models/models';
 import { CartService } from '../../cart/cart.service';
 import { ToastService } from '../../../shared/services/toast.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-tag-products',
@@ -92,7 +93,7 @@ export class TagProducts implements OnInit {
 
   loadProductsForTag() {
     this.loading = true;
-    this.http.get<any>(`http://localhost:8080/api/browse/products/tag/${this.tagSlug}`).subscribe({
+    this.http.get<any>(`${environment.apiUrl}/api/browse/products/tag/${this.tagSlug}`).subscribe({
       next: (res) => {
         // Tag filter API uses ApiResponse structure
         this.products = res.products || res || [];

@@ -1,6 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { DecimalPipe } from '@angular/common';
 import { OidcSecurityService } from 'angular-auth-oidc-client';
 import { ProductService } from '../../services/product.service';
 import { CartService } from '../cart/cart.service';
@@ -10,7 +11,7 @@ import { ProductCardComponent } from '../../shared/components/product-card/produ
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [RouterModule, FormsModule, ProductCardComponent],
+  imports: [RouterModule, FormsModule, ProductCardComponent, DecimalPipe],
   templateUrl: './home.component.html',
 })
 export class HomeComponent implements OnInit {

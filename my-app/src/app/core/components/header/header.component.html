@@ -1,128 +1,176 @@
-<header class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm">
+<header class="sticky top-0 z-50 glass-nav">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex items-center justify-between h-16">
 
-      <!-- Logo -->
-      <a routerLink="/" class="flex items-center gap-2 group">
-        <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg
-                    group-hover:scale-110 transition-transform duration-200 flex items-center justify-center">
-          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <!-- ── Logo ── -->
+      <a routerLink="/" class="flex items-center gap-2.5 group flex-shrink-0">
+        <div class="relative w-9 h-9 rounded-xl overflow-hidden
+                    bg-gradient-to-br from-indigo-500 via-purple-500 to-cyan-500
+                    group-hover:scale-110 transition-transform duration-300
+                    shadow-lg shadow-indigo-500/30 flex items-center justify-center">
+          <svg class="w-5 h-5 text-white drop-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                   d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
           </svg>
+          <div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
         </div>
-        <span class="text-xl font-black tracking-tight text-gray-900">
-          Shop<span class="text-indigo-600">Now</span>
+        <span class="text-xl font-black tracking-tight text-white hidden sm:block">
+          Shop<span class="gradient-text">Netic</span>
         </span>
       </a>
 
-      <!-- Desktop Nav -->
+      <!-- ── Desktop Nav ── -->
       <nav class="hidden md:flex items-center gap-1 text-sm font-medium">
-        <a routerLink="/" routerLinkActive="bg-indigo-50 text-indigo-700" [routerLinkActiveOptions]="{exact:true}"
-           class="px-3 py-2 rounded-lg text-gray-600 hover:text-indigo-700 hover:bg-indigo-50 transition-all duration-150">
+        <a routerLink="/" routerLinkActive="bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
+           [routerLinkActiveOptions]="{exact:true}"
+           class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-slate-400
+                  hover:text-white hover:bg-white/5 border border-transparent
+                  transition-all duration-200">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+          </svg>
           Home
         </a>
 
         @if (isAuthenticated) {
-          <a routerLink="/cart" routerLinkActive="bg-indigo-50 text-indigo-700"
-             class="relative px-3 py-2 rounded-lg text-gray-600 hover:text-indigo-700 hover:bg-indigo-50 transition-all duration-150">
+          <!-- Cart -->
+          <a routerLink="/cart" routerLinkActive="bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
+             class="relative flex items-center gap-1.5 px-3 py-2 rounded-lg text-slate-400
+                    hover:text-white hover:bg-white/5 border border-transparent transition-all duration-200">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.29 2.29c-.63.63-.18 1.71.71 1.71H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
             Cart
             @let cartCount = (cartService.cartCount$ | async) ?? 0;
             @if ($any(cartCount) > 0) {
-              <span class="absolute -top-0.5 -right-0.5 bg-indigo-600 text-white text-[10px]
-                           font-black rounded-full w-4 h-4 flex items-center justify-center
-                           animate-bounce">
+              <span class="absolute -top-1 -right-1 bg-gradient-to-br from-indigo-500 to-violet-500
+                           text-white text-[9px] font-black rounded-full w-[18px] h-[18px]
+                           flex items-center justify-center shadow-lg shadow-indigo-500/40
+                           ring-2 ring-slate-900">
                 {{ cartCount }}
               </span>
             }
           </a>
-          <a routerLink="/my-orders" routerLinkActive="bg-indigo-50 text-indigo-700"
-             class="px-3 py-2 rounded-lg text-gray-600 hover:text-indigo-700 hover:bg-indigo-50 transition-all duration-150">
-            My Orders
+
+          <a routerLink="/my-orders" routerLinkActive="bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
+             class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-slate-400
+                    hover:text-white hover:bg-white/5 border border-transparent transition-all duration-200">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+            Orders
           </a>
-          <a routerLink="/profile/addresses" routerLinkActive="bg-indigo-50 text-indigo-700"
-             class="px-3 py-2 rounded-lg text-gray-600 hover:text-indigo-700 hover:bg-indigo-50 transition-all duration-150">
+
+          <a routerLink="/profile/addresses" routerLinkActive="bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
+             class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-slate-400
+                    hover:text-white hover:bg-white/5 border border-transparent transition-all duration-200">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
             Addresses
           </a>
         }
 
         @if (hasRole('SELLER') || hasRole('ADMIN')) {
-          <a routerLink="/seller/add-product" routerLinkActive="bg-indigo-50 text-indigo-700"
-             class="px-3 py-2 rounded-lg text-gray-600 hover:text-indigo-700 hover:bg-indigo-50 transition-all duration-150">
-            Add Product
-          </a>
-          <a routerLink="/seller/products" routerLinkActive="bg-indigo-50 text-indigo-700"
-             class="px-3 py-2 rounded-lg text-gray-600 hover:text-indigo-700 hover:bg-indigo-50 transition-all duration-150">
-            Seller Dashboard
+          <div class="w-px h-5 bg-white/10 mx-1"></div>
+          <a routerLink="/seller/products" routerLinkActive="bg-violet-500/10 text-violet-400 border-violet-500/20"
+             class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-slate-400
+                    hover:text-violet-300 hover:bg-violet-500/5 border border-transparent transition-all duration-200">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+            </svg>
+            Seller
           </a>
         }
 
         @if (hasRole('VENDOR')) {
-          <a routerLink="/vendor/dashboard" routerLinkActive="bg-purple-50 text-purple-700"
-             class="px-3 py-2 rounded-lg text-gray-600 hover:text-purple-700 hover:bg-purple-50 transition-all duration-150">
-            Dashboard
+          <div class="w-px h-5 bg-white/10 mx-1"></div>
+          <a routerLink="/vendor/dashboard" routerLinkActive="bg-purple-500/10 text-purple-400 border-purple-500/20"
+             class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-slate-400
+                    hover:text-purple-300 hover:bg-purple-500/5 border border-transparent transition-all duration-200">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 5a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10-3a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1v-7z"/>
+            </svg>
+            Vendor
           </a>
         }
 
         @if (isAuthenticated && !hasRole('VENDOR') && !hasRole('ADMIN') && !hasRole('SELLER') && !hasVendorProfileLocal) {
-          <a routerLink="/vendor/register" routerLinkActive="bg-purple-50 text-purple-700"
-             class="px-3 py-2 rounded-lg text-gray-600 hover:text-purple-700 hover:bg-purple-50 transition-all duration-150">
+          <a routerLink="/vendor/register"
+             class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-slate-400
+                    hover:text-purple-300 hover:bg-purple-500/5 border border-transparent transition-all duration-200">
             Become Vendor
           </a>
         }
 
         @if (hasRole('ADMIN')) {
-          <a routerLink="/admin/vendors" routerLinkActive="bg-red-50 text-red-700"
-             class="px-3 py-2 rounded-lg text-gray-600 hover:text-red-700 hover:bg-red-50 transition-all duration-150">
+          <div class="w-px h-5 bg-white/10 mx-1"></div>
+          <a routerLink="/admin/vendors" routerLinkActive="bg-rose-500/10 text-rose-400 border-rose-500/20"
+             class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-slate-400
+                    hover:text-rose-300 hover:bg-rose-500/5 border border-transparent transition-all duration-200">
             Vendors
           </a>
-          <a routerLink="/admin/orders" routerLinkActive="bg-red-50 text-red-700"
-             class="px-3 py-2 rounded-lg text-gray-600 hover:text-red-700 hover:bg-red-50 transition-all duration-150">
+          <a routerLink="/admin/orders" routerLinkActive="bg-rose-500/10 text-rose-400 border-rose-500/20"
+             class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-slate-400
+                    hover:text-rose-300 hover:bg-rose-500/5 border border-transparent transition-all duration-200">
             Orders
           </a>
-          <a routerLink="/admin/warehouses" routerLinkActive="bg-red-50 text-red-700"
-             class="px-3 py-2 rounded-lg text-gray-600 hover:text-red-700 hover:bg-red-50 transition-all duration-150">
+          <a routerLink="/admin/warehouses" routerLinkActive="bg-rose-500/10 text-rose-400 border-rose-500/20"
+             class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-slate-400
+                    hover:text-rose-300 hover:bg-rose-500/5 border border-transparent transition-all duration-200">
             Warehouses
           </a>
         }
 
         @if (hasRole('SUPPORT')) {
-          <a routerLink="/support/orders" routerLinkActive="bg-cyan-50 text-cyan-700"
-             class="px-3 py-2 rounded-lg text-gray-600 hover:text-cyan-700 hover:bg-cyan-50 transition-all duration-150">
-            Delivery Support
+          <div class="w-px h-5 bg-white/10 mx-1"></div>
+          <a routerLink="/support/orders" routerLinkActive="bg-cyan-500/10 text-cyan-400 border-cyan-500/20"
+             class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-slate-400
+                    hover:text-cyan-300 hover:bg-cyan-500/5 border border-transparent transition-all duration-200">
+            Support
           </a>
         }
       </nav>
 
-      <!-- Right Side -->
+      <!-- ── Right Side ── -->
       <div class="flex items-center gap-2">
         @if (isAuthenticated) {
-          <div class="hidden sm:flex items-center gap-2">
-            <div class="w-8 h-8 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full
-                        flex items-center justify-center text-white text-xs font-black">
+          <div class="hidden sm:flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500
+                        flex items-center justify-center text-white text-xs font-black
+                        ring-2 ring-indigo-500/30 shadow-lg shadow-indigo-500/20">
               {{ username[0]?.toUpperCase() || 'U' }}
             </div>
-            <span class="text-sm text-gray-600 font-medium max-w-[100px] truncate">{{ username }}</span>
+            <span class="text-sm text-slate-300 font-medium max-w-[100px] truncate hidden lg:block">
+              {{ username }}
+            </span>
           </div>
-          <button (click)="logout()"
-                  class="text-sm px-4 py-2 rounded-lg border border-gray-200 text-gray-600
-                         hover:bg-gray-50 hover:border-gray-300 transition-all">
-            Logout
+          <button (click)="logout()" class="btn-ghost text-xs px-3 py-2">
+            Sign out
           </button>
         } @else {
-          <button (click)="login()"
-                  class="text-sm px-4 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-indigo-700
-                         text-white hover:from-indigo-700 hover:to-indigo-800 transition-all
-                         shadow-sm shadow-indigo-200 hover:shadow-md hover:-translate-y-0.5 active:scale-95">
-            Login
+          <button (click)="login()" class="btn-primary text-sm px-4 py-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+            </svg>
+            Sign in
           </button>
         }
 
         <!-- Mobile hamburger -->
         <button (click)="toggleMobileMenu()"
-                class="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors">
-          <svg [class]="mobileMenuOpen ? 'rotate-90' : ''"
-               class="w-5 h-5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                class="md:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors">
+          <svg class="w-5 h-5 transition-transform duration-200"
+               [class.rotate-90]="mobileMenuOpen"
+               fill="none" stroke="currentColor" viewBox="0 0 24 24">
             @if (mobileMenuOpen) {
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             } @else {
@@ -134,105 +182,116 @@
     </div>
   </div>
 
-  <!-- Mobile Menu -->
+  <!-- ── Mobile Menu ── -->
   @if (mobileMenuOpen) {
-    <div class="md:hidden border-t border-gray-100 bg-white/95 backdrop-blur-md px-4 py-3 space-y-1 text-sm
-                animate-slide-down shadow-lg">
+    <div class="md:hidden border-t border-white/5 bg-slate-900/95 backdrop-blur-2xl px-4 py-4 space-y-1 animate-slide-down">
+
       <a routerLink="/" (click)="mobileMenuOpen=false"
-         class="flex items-center gap-2 px-3 py-2.5 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors">
-        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+         class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition-all">
+        <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
         </svg>
         Home
       </a>
 
       @if (isAuthenticated) {
         <a routerLink="/cart" (click)="mobileMenuOpen=false"
-           class="flex items-center gap-2 px-3 py-2.5 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors">
-          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+           class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition-all">
+          <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.29 2.29c-.63.63-.18 1.71.71 1.71H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
           </svg>
           Cart
+          @let mc = (cartService.cartCount$ | async) ?? 0;
+          @if ($any(mc) > 0) {
+            <span class="ml-auto bg-indigo-500 text-white text-xs font-black rounded-full px-2 py-0.5">{{ mc }}</span>
+          }
         </a>
         <a routerLink="/my-orders" (click)="mobileMenuOpen=false"
-           class="flex items-center gap-2 px-3 py-2.5 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors">
-          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+           class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition-all">
+          <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
           </svg>
           My Orders
         </a>
         <a routerLink="/profile/addresses" (click)="mobileMenuOpen=false"
-           class="flex items-center gap-2 px-3 py-2.5 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors">
-          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+           class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 transition-all">
+          <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
           </svg>
           Addresses
         </a>
       }
 
       @if (hasRole('SELLER') || hasRole('ADMIN')) {
-        <a routerLink="/seller/add-product" (click)="mobileMenuOpen=false"
-           class="flex items-center gap-2 px-3 py-2.5 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors">
-          Add Product
-        </a>
+        <div class="neon-divider my-2"></div>
         <a routerLink="/seller/products" (click)="mobileMenuOpen=false"
-           class="flex items-center gap-2 px-3 py-2.5 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors">
+           class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:text-violet-300 hover:bg-violet-500/5 transition-all">
+          <svg class="w-4 h-4 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+          </svg>
           Seller Dashboard
+        </a>
+        <a routerLink="/seller/add-product" (click)="mobileMenuOpen=false"
+           class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:text-violet-300 hover:bg-violet-500/5 transition-all">
+          <svg class="w-4 h-4 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          Add Product
         </a>
       }
 
       @if (hasRole('VENDOR')) {
+        <div class="neon-divider my-2"></div>
         <a routerLink="/vendor/dashboard" (click)="mobileMenuOpen=false"
-           class="flex items-center gap-2 px-3 py-2.5 rounded-xl text-purple-700 hover:bg-purple-50 transition-colors">
+           class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:text-purple-300 hover:bg-purple-500/5 transition-all">
           Vendor Dashboard
         </a>
       }
 
       @if (isAuthenticated && !hasRole('VENDOR') && !hasRole('ADMIN') && !hasRole('SELLER') && !hasVendorProfileLocal) {
         <a routerLink="/vendor/register" (click)="mobileMenuOpen=false"
-           class="flex items-center gap-2 px-3 py-2.5 rounded-xl text-purple-700 hover:bg-purple-50 transition-colors">
+           class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:text-purple-300 hover:bg-purple-500/5 transition-all">
           Become a Vendor
         </a>
       }
 
       @if (hasRole('ADMIN')) {
+        <div class="neon-divider my-2"></div>
         <a routerLink="/admin/vendors" (click)="mobileMenuOpen=false"
-           class="px-3 py-2.5 rounded-xl block text-red-700 hover:bg-red-50 transition-colors">
-          Admin: Vendors
-        </a>
+           class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:text-rose-300 hover:bg-rose-500/5 transition-all">Admin: Vendors</a>
         <a routerLink="/admin/orders" (click)="mobileMenuOpen=false"
-           class="px-3 py-2.5 rounded-xl block text-red-700 hover:bg-red-50 transition-colors">
-          Admin: Orders
-        </a>
+           class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:text-rose-300 hover:bg-rose-500/5 transition-all">Admin: Orders</a>
         <a routerLink="/admin/warehouses" (click)="mobileMenuOpen=false"
-           class="px-3 py-2.5 rounded-xl block text-red-700 hover:bg-red-50 transition-colors">
-          Admin: Warehouses
-        </a>
+           class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:text-rose-300 hover:bg-rose-500/5 transition-all">Admin: Warehouses</a>
       }
 
       @if (hasRole('SUPPORT')) {
+        <div class="neon-divider my-2"></div>
         <a routerLink="/support/orders" (click)="mobileMenuOpen=false"
-           class="px-3 py-2.5 rounded-xl block text-cyan-700 hover:bg-cyan-50 transition-colors">
+           class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:text-cyan-300 hover:bg-cyan-500/5 transition-all">
           Delivery Support
         </a>
       }
 
-      <div class="pt-2 border-t border-gray-100">
-        @if (!isAuthenticated) {
-          <button (click)="login()"
-                  class="w-full py-2.5 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-colors">
-            Login
-          </button>
-        } @else {
-          <button (click)="logout()"
-                  class="w-full py-2.5 border border-gray-200 text-gray-600 rounded-xl hover:bg-gray-50 transition-colors">
-            Logout
-          </button>
-        }
-      </div>
+      <div class="neon-divider my-3"></div>
+      @if (!isAuthenticated) {
+        <button (click)="login()" class="btn-primary w-full py-3 text-sm">
+          Sign in to ShopNetic
+        </button>
+      } @else {
+        <div class="flex items-center gap-3 px-4 py-3">
+          <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500
+                      flex items-center justify-center text-white text-xs font-black flex-shrink-0">
+            {{ username[0]?.toUpperCase() || 'U' }}
+          </div>
+          <span class="text-sm text-slate-300 font-medium truncate">{{ username }}</span>
+          <button (click)="logout()" class="btn-ghost text-xs px-3 py-2 ml-auto flex-shrink-0">Sign out</button>
+        </div>
+      }
     </div>
   }
 </header>

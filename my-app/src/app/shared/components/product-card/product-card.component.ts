@@ -1,77 +1,120 @@
 import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { DecimalPipe, NgClass } from '@angular/common';
+import { DecimalPipe } from '@angular/common';
 import { AllProductResponse } from '../../../models/models';
 import { StarRatingComponent } from '../star-rating/star-rating.component';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-product-card',
   standalone: true,
-  imports: [DecimalPipe, NgClass, StarRatingComponent],
+  imports: [DecimalPipe, StarRatingComponent],
   template: `
     <div
       (click)="goToDetail()"
-      class="group bg-white rounded-2xl border border-gray-100 overflow-hidden cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
+      class="group glass-card rounded-2xl overflow-hidden cursor-pointer card-hover relative">
 
-      <!-- Image -->
-      <div class="relative aspect-square bg-gray-50 overflow-hidden">
+      <!-- ── Image ── -->
+      <div class="relative aspect-square overflow-hidden bg-slate-800/50">
         @if (product.imageUrl) {
           <img
             [src]="getImageUrl(product.imageUrl)"
             [alt]="product.name"
-            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
             (error)="handleImgError($event)"
           />
         } @else {
-          <div class="w-full h-full flex items-center justify-center text-gray-300">
-            <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="w-full h-full flex items-center justify-center">
+            <svg class="w-12 h-12 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
                     d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
             </svg>
           </div>
         }
-        <!-- In stock badge -->
-        <span
-          [ngClass]="product.inStock ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'"
-          class="absolute top-2 right-2 text-xs px-2 py-0.5 rounded-full font-medium">
-          {{ product.inStock ? 'In Stock' : 'Out of Stock' }}
+
+        <!-- Hover dark overlay -->
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent
+                    opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+        <!-- Quick Add slides up on hover -->
+        <div class="absolute bottom-0 inset-x-0 p-3
+                    translate-y-full group-hover:translate-y-0
+                    transition-transform duration-300 ease-out">
+          <button (click)="onAddToCart($event)" [disabled]="!product.inStock"
+                  class="w-full py-2 px-3 rounded-xl text-xs font-bold text-white
+                         bg-gradient-to-r from-indigo-600 to-violet-600
+                         hover:from-indigo-500 hover:to-violet-500
+                         shadow-lg shadow-indigo-500/40
+                         disabled:opacity-50 disabled:cursor-not-allowed
+                         transition-all active:scale-95">
+            {{ product.inStock ? '+ Add to Cart' : 'Out of Stock' }}
+          </button>
+        </div>
+
+        <!-- Stock badge -->
+        <span class="absolute top-2 right-2 text-[10px] font-bold px-2 py-0.5 rounded-full"
+              [class]="product.inStock
+                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                : 'bg-red-500/20 text-red-400 border border-red-500/30'">
+          {{ product.inStock ? 'In Stock' : 'Sold Out' }}
         </span>
+
+        <!-- Discount badge -->
+        @if (product.discount && product.discount > 0) {
+          <span class="absolute top-2 left-2 text-[10px] font-black px-2 py-0.5 rounded-full
+                       bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-lg shadow-rose-500/30">
+            -{{ product.discount }}%
+          </span>
+        }
       </div>
 
-      <!-- Info -->
-      <div class="p-4">
-        <h3 class="font-semibold text-gray-900 truncate text-sm">{{ product.name }}</h3>
-        <p class="text-xs text-gray-400 mt-1 line-clamp-2">{{ product.shortDesc }}</p>
+      <!-- ── Info ── -->
+      <div class="p-3.5">
+        <h3 class="font-semibold text-slate-200 text-sm truncate leading-snug">{{ product.name }}</h3>
+        <p class="text-xs text-slate-500 mt-0.5 line-clamp-1">{{ product.shortDesc }}</p>
 
-        <div class="mt-2">
+        <div class="mt-1.5">
           <app-star-rating [rating]="product.rating" [count]="product.reviewCount"/>
         </div>
 
-        <div class="flex items-center justify-between mt-3">
+        <!-- Price row -->
+        <div class="flex items-center justify-between mt-2.5">
           <div class="flex flex-col">
             @if (product.discount && product.discount > 0) {
-              <span class="text-xs text-gray-400 line-through">₹{{ product.price | number:'1.0-0' }}</span>
-              <span class="text-lg font-bold text-gray-900">
+              <span class="text-xs text-slate-600 line-through leading-none">
+                ₹{{ product.price | number:'1.0-0' }}
+              </span>
+              <span class="text-base font-black gradient-text leading-tight">
                 ₹{{ (product.price * (1 - product.discount / 100)) | number:'1.0-0' }}
-                <span class="ml-1 text-xs font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-md">{{ product.discount }}% off</span>
               </span>
             } @else {
-              <span class="text-lg font-bold text-gray-900">₹{{ product.price | number:'1.0-0' }}</span>
+              <span class="text-base font-black text-slate-100">₹{{ product.price | number:'1.0-0' }}</span>
             }
           </div>
-          <button
-            (click)="onAddToCart($event)"
-            [disabled]="!product.inStock"
-            class="text-xs px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-            Add to Cart
+
+          <!-- Small add btn visible on mobile (hover overlay doesn't work on touch) -->
+          <button (click)="onAddToCart($event)" [disabled]="!product.inStock"
+                  class="md:hidden w-8 h-8 rounded-lg flex items-center justify-center
+                         bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20
+                         text-indigo-400 hover:text-indigo-300
+                         disabled:opacity-40 disabled:cursor-not-allowed
+                         transition-all duration-200 active:scale-90">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+            </svg>
           </button>
         </div>
 
         <!-- Tags -->
         @if (product.tags.length) {
-          <div class="flex flex-wrap gap-1 mt-2">
-            @for (tag of product.tags.slice(0, 3); track tag.id) {
-              <button (click)="goToTag($event, tag.name)" class="text-xs px-2 py-0.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-full transition-colors">
+          <div class="flex flex-wrap gap-1 mt-2.5">
+            @for (tag of product.tags.slice(0, 2); track tag.id) {
+              <button (click)="goToTag($event, tag.name)"
+                      class="text-[10px] px-2 py-0.5 rounded-full
+                             bg-slate-800 hover:bg-indigo-500/10
+                             text-slate-500 hover:text-indigo-400
+                             border border-slate-700/50 hover:border-indigo-500/30
+                             transition-all duration-200">
                 {{ tag.name }}
               </button>
             }
@@ -86,9 +129,8 @@ export class ProductCardComponent {
   @Output() addToCart = new EventEmitter<AllProductResponse>();
 
   private router = inject(Router);
-  private localBase = 'http://localhost:8080';
+  private localBase = environment.apiUrl;
 
-  /** Returns the correct image src — handles both Cloudinary (absolute) and local (relative) URLs. */
   getImageUrl(url: string | null | undefined): string {
     if (!url) return '';
     return url.startsWith('http') ? url : this.localBase + url;
@@ -105,7 +147,6 @@ export class ProductCardComponent {
 
   goToTag(event: Event, tag: string): void {
     event.stopPropagation();
-    // Convert tag name to slug-like format if necessary, or just use the name
     this.router.navigate(['/products/tag', tag.toLowerCase()]);
   }
 

@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { DecimalPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastService } from '../../../shared/services/toast.service';
+import { environment } from '../../../../environments/environment';
 
 interface OrderItem {
   orderItemId: number;
@@ -189,7 +190,7 @@ const ORDER_STATUSES = [
 export class AdminOrdersComponent implements OnInit {
   private http = inject(HttpClient);
   private toast = inject(ToastService);
-  private baseUrl = 'http://localhost:8080';
+  private baseUrl = environment.apiUrl;
 
   orders: AdminOrder[] = [];
   loading = true;

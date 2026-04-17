@@ -1,98 +1,154 @@
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="min-h-screen bg-slate-950">
 
-  <!-- Toast -->
-  @if (cartMessage) {
-    <div [class]="cartMessageType === 'success'
-           ? 'bg-green-50 border-green-200 text-green-800'
-           : 'bg-red-50 border-red-200 text-red-800'"
-         class="fixed top-20 right-4 z-50 px-5 py-3 rounded-xl border text-sm font-medium shadow-lg animate-fade-in">
-      {{ cartMessage }}
-    </div>
-  }
+  <!-- ── Hero Section ── -->
+  <div class="relative overflow-hidden">
+    <!-- Background orbs -->
+    <div class="absolute -top-40 -left-40 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -top-20 right-0 w-80 h-80 bg-violet-600/15 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute top-40 left-1/2 w-72 h-72 bg-cyan-600/10 rounded-full blur-3xl pointer-events-none"></div>
 
-  <!-- Hero search bar -->
-  <div class="text-center mb-10">
-    <h1 class="text-4xl font-black text-gray-900 mb-2">
-      Discover Products
-    </h1>
-    <p class="text-gray-500 mb-6 text-sm">{{ totalElements }} products available</p>
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-14 text-center">
+      <!-- Badge -->
+      <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full
+                  bg-indigo-500/10 border border-indigo-500/20 mb-6 animate-fade-in">
+        <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
+        <span class="text-indigo-300 text-xs font-semibold tracking-wider uppercase">
+          {{ totalElements | number }} Products Available
+        </span>
+      </div>
 
-    <div class="flex max-w-xl mx-auto gap-2">
-      <input
-        [(ngModel)]="searchQuery"
-        (keyup.enter)="onSearch()"
-        placeholder="Search products..."
-        class="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-300 text-sm"
-      />
-      <button
-        (click)="onSearch()"
-        class="px-5 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors text-sm font-medium">
-        Search
-      </button>
-      @if (searchQuery) {
-        <button
-          (click)="searchQuery=''; loadProducts()"
-          class="px-3 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 text-gray-500 text-sm">
-          ✕
+      <!-- Headline -->
+      <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white mb-4 leading-none animate-fade-in">
+        Discover Amazing
+        <span class="block gradient-text mt-1">Products</span>
+      </h1>
+      <p class="text-slate-400 max-w-lg mx-auto text-base mb-10 animate-fade-in">
+        Curated collections from trusted sellers — quality you can count on.
+      </p>
+
+      <!-- Search Bar -->
+      <div class="flex max-w-2xl mx-auto gap-2 animate-slide-up">
+        <div class="relative flex-1">
+          <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none"
+               fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
+          </svg>
+          <input
+            [(ngModel)]="searchQuery"
+            (keyup.enter)="onSearch()"
+            placeholder="Search products, brands, categories..."
+            class="input-dark pl-11 pr-4 py-3.5 text-sm w-full rounded-xl"
+          />
+        </div>
+        <button (click)="onSearch()" class="btn-primary px-6 py-3.5 text-sm flex-shrink-0">
+          Search
         </button>
-      }
+        @if (searchQuery) {
+          <button (click)="searchQuery=''; loadProducts()"
+                  class="btn-ghost px-4 py-3.5 flex-shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        }
+      </div>
     </div>
   </div>
 
-  <!-- Product Grid -->
-  @if (loading) {
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-      @for (i of [1,2,3,4,5,6,7,8,9,10]; track i) {
-        <div class="bg-gray-100 rounded-2xl aspect-square animate-pulse"></div>
-      }
-    </div>
-  } @else if (products.length === 0) {
-    <div class="flex flex-col items-center justify-center py-24 text-gray-400">
-      <svg class="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
-              d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
-      </svg>
-      <p class="text-lg font-medium">No products found</p>
-      <button (click)="searchQuery=''; loadProducts()" class="mt-3 text-indigo-600 text-sm hover:underline">
-        Clear search
-      </button>
-    </div>
-  } @else {
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-      @for (product of products; track product.id) {
-        <app-product-card
-          [product]="product"
-          (addToCart)="onAddToCart($event)"
-        />
-      }
-    </div>
-  }
+  <div class="neon-divider"></div>
 
-  <!-- Pagination -->
-  @if (totalPages > 1) {
-    <div class="flex items-center justify-center gap-2 mt-10">
-      <button
-        (click)="goToPage(currentPage - 1)"
-        [disabled]="currentPage === 0"
-        class="px-4 py-2 rounded-lg border border-gray-200 text-sm disabled:opacity-40 hover:bg-gray-50 transition-colors">
-        ← Prev
-      </button>
-      @for (page of [].constructor(totalPages); track $index) {
-        <button
-          (click)="goToPage($index)"
-          [class]="$index === currentPage
-            ? 'bg-indigo-600 text-white'
-            : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'"
-          class="w-9 h-9 rounded-lg text-sm font-medium transition-colors">
-          {{ $index + 1 }}
-        </button>
-      }
-      <button
-        (click)="goToPage(currentPage + 1)"
-        [disabled]="currentPage === totalPages - 1"
-        class="px-4 py-2 rounded-lg border border-gray-200 text-sm disabled:opacity-40 hover:bg-gray-50 transition-colors">
-        Next →
-      </button>
+  <!-- ── Product Section ── -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+    <!-- Section header -->
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h2 class="text-xl font-bold text-white">
+          @if (searchQuery) { Results for "{{ searchQuery }}" } @else { Featured Products }
+        </h2>
+        <p class="text-slate-500 text-sm mt-1">
+          @if (products.length > 0) { Showing {{ products.length }} items } @else { No results }
+        </p>
+      </div>
     </div>
-  }
+
+    <!-- Loading Skeletons -->
+    @if (loading) {
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        @for (i of [1,2,3,4,5,6,7,8,9,10]; track i) {
+          <div class="glass-card rounded-2xl overflow-hidden">
+            <div class="skeleton aspect-square"></div>
+            <div class="p-4 space-y-2">
+              <div class="skeleton h-3 rounded-full w-3/4"></div>
+              <div class="skeleton h-3 rounded-full w-1/2"></div>
+              <div class="skeleton h-8 rounded-lg w-full mt-3"></div>
+            </div>
+          </div>
+        }
+      </div>
+
+    <!-- Empty State -->
+    } @else if (products.length === 0) {
+      <div class="flex flex-col items-center justify-center py-28 text-center">
+        <div class="w-20 h-20 rounded-2xl glass-card flex items-center justify-center mb-6 animate-float">
+          <svg class="w-10 h-10 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+          </svg>
+        </div>
+        <h3 class="text-xl font-bold text-slate-300 mb-2">No products found</h3>
+        <p class="text-slate-500 text-sm mb-6">Try a different search term or browse all products.</p>
+        <button (click)="searchQuery=''; loadProducts()" class="btn-primary">
+          Browse All Products
+        </button>
+      </div>
+
+    <!-- Product Grid -->
+    } @else {
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        @for (product of products; track product.id) {
+          <app-product-card
+            [product]="product"
+            (addToCart)="onAddToCart($event)"
+          />
+        }
+      </div>
+    }
+
+    <!-- ── Pagination ── -->
+    @if (totalPages > 1 && !loading) {
+      <div class="flex items-center justify-center gap-2 mt-14">
+        <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 0"
+                class="btn-ghost px-4 py-2 text-sm disabled:opacity-30">
+          ← Prev
+        </button>
+
+        <div class="flex items-center gap-1">
+          @for (page of [].constructor(totalPages); track $index) {
+            @if ($index <= 4 || $index === totalPages - 1 || $index === currentPage) {
+              <button (click)="goToPage($index)"
+                      [class]="$index === currentPage
+                        ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-500/30 border-indigo-500/50'
+                        : 'btn-ghost'"
+                      class="w-9 h-9 rounded-lg text-sm font-medium border transition-all">
+                {{ $index + 1 }}
+              </button>
+            }
+          }
+        </div>
+
+        <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages - 1"
+                class="btn-ghost px-4 py-2 text-sm disabled:opacity-30">
+          Next →
+        </button>
+      </div>
+    }
+  </div>
+
+  <!-- ── Footer strip ── -->
+  <div class="neon-divider mt-16"></div>
+  <div class="text-center py-8 text-slate-600 text-xs">
+    © 2025 ShopNetic · All rights reserved
+  </div>
 </div>

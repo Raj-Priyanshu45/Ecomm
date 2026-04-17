@@ -2,6 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
 
 const INDIAN_STATES: { value: string; label: string }[] = [
   'ANDHRA_PRADESH', 'ARUNACHAL_PRADESH', 'ASSAM', 'BIHAR', 'CHHATTISGARH',
@@ -306,7 +307,7 @@ interface VendorProfile {
 })
 export class VendorRegisterComponent implements OnInit {
   private http = inject(HttpClient);
-  private readonly base = 'http://localhost:8080';
+  private readonly base = environment.apiUrl;
 
   loading = true;
   submitting = false;
@@ -351,10 +352,10 @@ export class VendorRegisterComponent implements OnInit {
 
   get statusBannerClass(): string {
     const map: Record<string, string> = {
-      APPROVED:  'bg-green-600 text-white',
-      REJECTED:  'bg-red-500 text-white',
+      APPROVED: 'bg-green-600 text-white',
+      REJECTED: 'bg-red-500 text-white',
       SUSPENDED: 'bg-orange-500 text-white',
-      PENDING:   'bg-yellow-400 text-yellow-900',
+      PENDING: 'bg-yellow-400 text-yellow-900',
     };
     return map[this.existingProfile?.status ?? 'PENDING'] ?? 'bg-yellow-400 text-yellow-900';
   }
@@ -386,11 +387,11 @@ export class VendorRegisterComponent implements OnInit {
           this.error = err.error?.mess?.[0] ?? 'You have already submitted an application.';
           // Also try to load their profile
           this.http.get<VendorProfile>(`${this.base}/api/vendor/me`).subscribe({
-            next: (p) => { 
-                this.existingProfile = p; 
-                localStorage.setItem('hasVendorProfile', 'true');
+            next: (p) => {
+              this.existingProfile = p;
+              localStorage.setItem('hasVendorProfile', 'true');
             },
-            error: () => {},
+            error: () => { },
           });
         } else {
           this.error = err.error?.mess?.[0] ?? 'Failed to submit application. Please try again.';

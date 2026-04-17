@@ -6,6 +6,7 @@ import { OidcSecurityService } from 'angular-auth-oidc-client';
 import { CartService } from './cart.service';
 import { CartResponse } from '../../models/models';
 import { ToastService } from '../../shared/services/toast.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-cart',
@@ -70,6 +71,6 @@ export class CartComponent implements OnInit {
   getImageUrl(url: string): string {
     if (!url) return '';
     if (url.startsWith('http')) return url;
-    return `http://localhost:8080${url}`;
+    return `${environment.apiUrl}${url}`;
   }
 }

@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { OidcSecurityService } from 'angular-auth-oidc-client';
 import { OrderResponse } from '../../models/models';
 import { ToastService } from '../../shared/services/toast.service';
+import { environment } from '../../../environments/environment';
 
 interface PagedOrders {
   content: OrderResponse[];
@@ -22,7 +23,7 @@ interface PagedOrders {
 export class MyOrdersComponent implements OnInit {
   private http = inject(HttpClient);
   private toast = inject(ToastService);
-  private baseUrl = 'http://localhost:8080';
+  private baseUrl = environment.apiUrl;
 
   orders: OrderResponse[] = [];
   loading = true;

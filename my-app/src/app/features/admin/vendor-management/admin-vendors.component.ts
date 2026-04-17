@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastService } from '../../../shared/services/toast.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-admin-vendors',
@@ -104,7 +105,7 @@ import { ToastService } from '../../../shared/services/toast.service';
 export class AdminVendorsComponent implements OnInit {
   private http = inject(HttpClient);
   private toast = inject(ToastService);
-  private baseUrl = 'http://localhost:8080';
+  private baseUrl = environment.apiUrl;
 
   vendors: any[] = [];
   warehouses: any[] = [];

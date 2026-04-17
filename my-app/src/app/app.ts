@@ -16,7 +16,7 @@ import { ToastComponent } from './shared/components/toast/toast.component';
     <app-toast />
   `,
   styles: [`
-    main { min-height: calc(100vh - 64px); background: #f9fafb; }
+    main { min-height: calc(100vh - 64px); background: #020617; }
   `],
 })
 export class App implements OnInit {

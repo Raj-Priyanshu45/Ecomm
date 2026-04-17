@@ -12,31 +12,34 @@ import { NgClass } from '@angular/common';
         <div
           class="toast-item"
           [ngClass]="'toast-' + toast.type"
-          role="alert"
-        >
+          role="alert">
+
+          <!-- Colored left bar -->
+          <div class="toast-bar" [ngClass]="'bar-' + toast.type"></div>
+
           <!-- Icon -->
-          <span class="toast-icon">
+          <span class="toast-icon" [ngClass]="'icon-' + toast.type">
             @switch (toast.type) {
               @case ('success') {
-                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                         d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
               }
               @case ('error') {
-                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                         d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
               }
               @case ('warning') {
-                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                         d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
                 </svg>
               }
               @default {
-                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                         d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
@@ -47,9 +50,9 @@ import { NgClass } from '@angular/common';
           <!-- Message -->
           <span class="toast-message">{{ toast.message }}</span>
 
-          <!-- Dismiss button -->
+          <!-- Dismiss -->
           <button class="toast-dismiss" (click)="toastService.dismiss(toast.id)" aria-label="Dismiss">
-            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
             </svg>
           </button>
@@ -66,65 +69,60 @@ import { NgClass } from '@angular/common';
       display: flex;
       flex-direction: column;
       gap: 0.625rem;
-      max-width: min(420px, calc(100vw - 3rem));
+      max-width: min(400px, calc(100vw - 3rem));
       pointer-events: none;
     }
 
     .toast-item {
+      position: relative;
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       gap: 0.75rem;
-      padding: 0.875rem 1rem;
+      padding: 0.875rem 1rem 0.875rem 0.5rem;
       border-radius: 0.875rem;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08);
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04);
       pointer-events: all;
-      animation: slideInRight 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-      backdrop-filter: blur(8px);
-      border: 1px solid transparent;
+      animation: toastSlide 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      overflow: hidden;
     }
 
-    @keyframes slideInRight {
-      from { opacity: 0; transform: translateX(100%) scale(0.92); }
-      to   { opacity: 1; transform: translateX(0)   scale(1); }
+    @keyframes toastSlide {
+      from { opacity: 0; transform: translateX(110%) scale(0.9); }
+      to   { opacity: 1; transform: translateX(0) scale(1); }
     }
 
-    .toast-success {
-      background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-      border-color: #86efac;
-      color: #14532d;
+    .toast-bar {
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      border-radius: 4px 0 0 4px;
     }
-    .toast-success .toast-icon { color: #16a34a; }
 
-    .toast-error {
-      background: linear-gradient(135deg, #fff1f2, #ffe4e6);
-      border-color: #fca5a5;
-      color: #7f1d1d;
-    }
-    .toast-error .toast-icon { color: #dc2626; }
-
-    .toast-warning {
-      background: linear-gradient(135deg, #fffbeb, #fef3c7);
-      border-color: #fcd34d;
-      color: #78350f;
-    }
-    .toast-warning .toast-icon { color: #d97706; }
-
-    .toast-info {
-      background: linear-gradient(135deg, #eff6ff, #dbeafe);
-      border-color: #93c5fd;
-      color: #1e3a5f;
-    }
-    .toast-info .toast-icon { color: #2563eb; }
+    .toast-success .toast-bar, .bar-success { background: #4ade80; }
+    .toast-error   .toast-bar, .bar-error   { background: #f87171; }
+    .toast-warning .toast-bar, .bar-warning { background: #fbbf24; }
+    .toast-info    .toast-bar, .bar-info    { background: #60a5fa; }
 
     .toast-icon {
       flex-shrink: 0;
-      margin-top: 0.05rem;
+      margin-left: 0.5rem;
+      display: flex;
     }
+
+    .icon-success { color: #4ade80; }
+    .icon-error   { color: #f87171; }
+    .icon-warning { color: #fbbf24; }
+    .icon-info    { color: #60a5fa; }
 
     .toast-message {
       flex: 1;
-      font-size: 0.875rem;
+      font-size: 0.8125rem;
       font-weight: 500;
+      color: #e2e8f0;
       line-height: 1.45;
     }
 
@@ -133,14 +131,17 @@ import { NgClass } from '@angular/common';
       background: none;
       border: none;
       cursor: pointer;
-      opacity: 0.5;
-      padding: 0;
+      color: #475569;
+      padding: 0.25rem;
       display: flex;
       align-items: center;
-      transition: opacity 0.15s;
-      color: inherit;
+      border-radius: 0.375rem;
+      transition: color 0.15s, background 0.15s;
     }
-    .toast-dismiss:hover { opacity: 1; }
+    .toast-dismiss:hover {
+      color: #94a3b8;
+      background: rgba(255,255,255,0.06);
+    }
 
     @media (max-width: 640px) {
       .toast-container {

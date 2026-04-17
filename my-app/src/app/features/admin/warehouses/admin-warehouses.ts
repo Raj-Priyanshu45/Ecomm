@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { ToastService } from '../../../shared/services/toast.service';
+import { environment } from '../../../../environments/environment';
 
 interface Warehouse {
   id: number;
@@ -25,7 +26,7 @@ interface Warehouse {
 export class AdminWarehouses implements OnInit {
   private http = inject(HttpClient);
   private toast = inject(ToastService);
-  private readonly base = 'http://localhost:8080';
+  private readonly base = environment.apiUrl;
 
   warehouses: Warehouse[] = [];
   loading = true;

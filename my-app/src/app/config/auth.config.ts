@@ -1,4 +1,5 @@
 import { PassedInitialConfig } from 'angular-auth-oidc-client';
+import { environment } from '../../environments/environment';
 
 const getBaseUrl = () => {
   if (typeof window !== 'undefined') {
@@ -9,7 +10,7 @@ const getBaseUrl = () => {
 
 export const authConfig: PassedInitialConfig = {
   config: {
-    authority: 'http://localhost:8181/realms/ecomApp',
+    authority: 'https://euc1.auth.ac/auth/realms/shop-netic',
     redirectUrl: getBaseUrl(),
     postLogoutRedirectUri: getBaseUrl(),
     clientId: 'angular-client',

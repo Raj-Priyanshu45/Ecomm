@@ -9,6 +9,7 @@ import { ReviewService } from '../services/review.service';
 import { SingleProductResponse, ReviewResponse, CreateReviewRequest } from '../models/models';
 import { StarRatingComponent } from '../shared/components/star-rating/star-rating.component';
 import { ToastService } from '../shared/services/toast.service';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-product-detail',
@@ -54,7 +55,7 @@ export class ProductDetailComponent implements OnInit {
   editComment = '';
   editError = '';
 
-  private localBase = 'http://localhost:8080';
+  private localBase = environment.apiUrl;
 
   /** Returns the correct image src — handles both Cloudinary (absolute) and local (relative) URLs. */
   getImageUrl(url: string | null | undefined): string {

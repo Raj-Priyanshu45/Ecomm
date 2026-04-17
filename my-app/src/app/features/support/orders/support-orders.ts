@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { ToastService } from '../../../shared/services/toast.service';
+import { environment } from '../../../../environments/environment';
 
 interface OrderItem {
   orderItemId: number;
@@ -35,7 +36,7 @@ interface Order {
 export class SupportOrders implements OnInit {
   private http = inject(HttpClient);
   private toast = inject(ToastService);
-  private readonly base = 'http://localhost:8080';
+  private readonly base = environment.apiUrl;
 
   orders: Order[] = [];
   loading = true;

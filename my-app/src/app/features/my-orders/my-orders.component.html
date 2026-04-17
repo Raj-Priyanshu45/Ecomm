@@ -1,94 +1,129 @@
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-  <h1 class="text-3xl font-black text-gray-900 mb-6">My Orders</h1>
+<div class="min-h-screen bg-slate-950 py-10">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 
-  @if (loading) {
-    <div class="space-y-4">
-      @for (i of [1,2,3]; track i) {
-        <div class="h-24 bg-gray-100 rounded-2xl animate-pulse"></div>
-      }
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h1 class="text-3xl font-black text-white">My Orders</h1>
+        <p class="text-slate-500 text-sm mt-1">Track and manage all your purchases</p>
+      </div>
+      <a routerLink="/" class="btn-ghost text-sm px-4 py-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+        </svg>
+        Shop More
+      </a>
     </div>
-  } @else if (orders.length === 0) {
-    <div class="flex flex-col items-center justify-center py-24 text-gray-400">
-      <svg class="w-16 h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
-              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-      </svg>
-      <p class="text-lg font-medium">No orders yet</p>
-      <a routerLink="/" class="mt-3 text-indigo-600 hover:underline text-sm">Start Shopping</a>
-    </div>
-  } @else {
-    <div class="space-y-4">
-      @for (order of orders; track order.orderId) {
-        <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden">
-          <!-- Order Header -->
-          <div class="p-5 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
-               (click)="toggleOrder(order.orderId)">
-            <div class="flex items-center gap-4">
-              <div>
-                <p class="font-semibold text-gray-900 text-sm">Order #{{ order.orderId }}</p>
-                <p class="text-xs text-gray-400 mt-0.5">{{ order.placedAt | date:'mediumDate' }}</p>
-              </div>
-              <span [class]="getStatusClass(order.status)"
-                    class="text-xs px-3 py-1 rounded-full font-medium">
-                {{ order.status.replace('_', ' ') }}
-              </span>
-            </div>
-            <div class="flex items-center gap-4">
-              <span class="font-bold text-gray-900">₹{{ order.totalAmount | number:'1.0-0' }}</span>
-              <svg [class]="expandedOrderId === order.orderId ? 'rotate-180' : ''"
-                   class="w-4 h-4 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-              </svg>
-            </div>
-          </div>
 
-          <!-- Expanded Details -->
-          @if (expandedOrderId === order.orderId) {
-            <div class="border-t border-gray-100 p-5 space-y-4">
-              <!-- Items -->
-              <div class="space-y-2">
-                @for (item of order.items; track item.orderItemId) {
-                  <div class="flex items-center justify-between text-sm">
-                    <span class="text-gray-700">{{ item.productName }}
-                      @if (item.skuCode) { <span class="text-gray-400 text-xs">({{ item.skuCode }})</span> }
-                      × {{ item.quantity }}
-                    </span>
-                    <span class="font-medium">₹{{ item.lineTotal | number:'1.0-0' }}</span>
-                  </div>
-                }
-              </div>
+    @if (loading) {
+      <div class="space-y-4">
+        @for (i of [1,2,3]; track i) {
+          <div class="skeleton h-24 rounded-2xl"></div>
+        }
+      </div>
 
-              <!-- Shipping -->
-              <div class="bg-gray-50 rounded-xl p-3 text-sm text-gray-600">
-                <p class="font-semibold text-gray-800 mb-1">Delivery Address</p>
-                <p>{{ order.shippingName }}</p>
-                <p>{{ order.shippingAddressLine }}, {{ order.shippingCity }}</p>
-                <p>{{ order.shippingState }} - {{ order.shippingPincode }}</p>
-              </div>
-
-              <!-- Actions -->
-              <div class="flex gap-2">
-                @if (order.status === 'PLACED' || order.status === 'CONFIRMED') {
-                  <button (click)="cancelOrder(order.orderId)"
-                          class="px-4 py-2 text-sm border border-red-200 text-red-600 rounded-xl hover:bg-red-50 transition-colors">
-                    Cancel Order
-                  </button>
-                }
-                @if (order.status === 'DELIVERED') {
-                  <button (click)="requestReturn(order.orderId)"
-                          class="px-4 py-2 text-sm border border-orange-200 text-orange-600 rounded-xl hover:bg-orange-50 transition-colors">
-                    Request Return
-                  </button>
-                  <a [routerLink]="['/products', order.items[0]?.productId]"
-                     class="px-4 py-2 text-sm border border-indigo-200 text-indigo-600 rounded-xl hover:bg-indigo-50 transition-colors">
-                    Review Product
-                  </a>
-                }
-              </div>
-            </div>
-          }
+    } @else if (orders.length === 0) {
+      <div class="glass-card rounded-3xl py-24 text-center animate-fade-in">
+        <div class="w-20 h-20 rounded-2xl glass flex items-center justify-center mx-auto mb-6 animate-float">
+          <svg class="w-10 h-10 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+          </svg>
         </div>
-      }
-    </div>
-  }
+        <h3 class="text-xl font-bold text-slate-300 mb-2">No orders yet</h3>
+        <p class="text-slate-500 text-sm mb-6">Start shopping to see your orders here.</p>
+        <a routerLink="/" class="btn-primary inline-flex">Start Shopping</a>
+      </div>
+
+    } @else {
+      <div class="space-y-4">
+        @for (order of orders; track order.orderId) {
+          <div class="glass-card rounded-2xl overflow-hidden card-hover">
+
+            <!-- Order Header -->
+            <div class="p-5 flex items-center justify-between cursor-pointer hover:bg-white/2 transition-colors"
+                 (click)="toggleOrder(order.orderId)">
+              <div class="flex items-center gap-4">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500/20 to-violet-500/20
+                            border border-indigo-500/20 flex items-center justify-center">
+                  <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="font-bold text-slate-200 text-sm">Order #{{ order.orderId }}</p>
+                  <p class="text-xs text-slate-500 mt-0.5">{{ order.placedAt | date:'mediumDate' }}</p>
+                </div>
+                <span class="text-xs px-3 py-1 rounded-full font-semibold"
+                      [class]="getStatusClass(order.status)">
+                  {{ order.status.replace('_', ' ') }}
+                </span>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="font-black text-white">₹{{ order.totalAmount | number:'1.0-0' }}</span>
+                <svg class="w-4 h-4 text-slate-500 transition-transform duration-300"
+                     [class.rotate-180]="expandedOrderId === order.orderId"
+                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Expanded Panel -->
+            @if (expandedOrderId === order.orderId) {
+              <div class="border-t border-white/5 p-5 space-y-5 animate-slide-down">
+
+                <!-- Items -->
+                <div class="space-y-2">
+                  @for (item of order.items; track item.orderItemId) {
+                    <div class="flex items-center justify-between py-2.5 border-b border-white/5 last:border-0">
+                      <div>
+                        <span class="text-sm text-slate-200 font-medium">{{ item.productName }}</span>
+                        @if (item.skuCode) {
+                          <span class="text-xs text-slate-600 ml-2">({{ item.skuCode }})</span>
+                        }
+                        <span class="text-xs text-slate-500 ml-2">× {{ item.quantity }}</span>
+                      </div>
+                      <span class="text-sm font-bold text-slate-200">₹{{ item.lineTotal | number:'1.0-0' }}</span>
+                    </div>
+                  }
+                </div>
+
+                <!-- Shipping address -->
+                <div class="glass rounded-xl p-4">
+                  <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Delivery Address</p>
+                  <p class="text-sm text-slate-300 font-medium">{{ order.shippingName }}</p>
+                  <p class="text-sm text-slate-500 mt-0.5">{{ order.shippingAddressLine }}, {{ order.shippingCity }}</p>
+                  <p class="text-sm text-slate-500">{{ order.shippingState }} — {{ order.shippingPincode }}</p>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex gap-2 flex-wrap">
+                  @if (order.status === 'PLACED' || order.status === 'CONFIRMED') {
+                    <button (click)="cancelOrder(order.orderId)"
+                            class="px-4 py-2 text-sm border border-rose-500/30 text-rose-400
+                                   rounded-xl hover:bg-rose-500/10 transition-all">
+                      Cancel Order
+                    </button>
+                  }
+                  @if (order.status === 'DELIVERED') {
+                    <button (click)="requestReturn(order.orderId)"
+                            class="px-4 py-2 text-sm border border-amber-500/30 text-amber-400
+                                   rounded-xl hover:bg-amber-500/10 transition-all">
+                      Request Return
+                    </button>
+                    <a [routerLink]="['/products', order.items[0]?.productId]"
+                       class="btn-ghost text-sm px-4 py-2">
+                      Review Product
+                    </a>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
 </div>
