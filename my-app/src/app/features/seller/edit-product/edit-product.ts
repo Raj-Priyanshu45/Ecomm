@@ -45,7 +45,7 @@ export class EditProduct implements OnInit {
         this.name = res.name;
         this.description = res.description;
         this.price = res.price;
-        this.discount = res.discount;
+        this.discount = res.discount ?? null;
         this.quantity = res.count;
         this.tagsInput = res.tags ? res.tags.map((t: any) => t.name).join(', ') : '';
         this.loading = false;
