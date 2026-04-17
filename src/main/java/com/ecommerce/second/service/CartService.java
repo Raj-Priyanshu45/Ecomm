@@ -75,6 +75,13 @@ public class CartService {
             price = variant.getPrice();
         }
 
+        // Apply product discount to the price
+        BigDecimal discount = product.getDiscount();
+        if (discount != null && discount.compareTo(BigDecimal.ZERO) > 0) {
+            BigDecimal multiplier = BigDecimal.ONE.subtract(discount.divide(new BigDecimal(100)));
+            price = price.multiply(multiplier);
+        }
+
         // Check if this line already exists in the cart
         Integer variantId = variant != null ? variant.getId() : null;
         Optional<CartItem> existing = cartItemRepo.findByCartIdAndProductIdAndVariantId(
