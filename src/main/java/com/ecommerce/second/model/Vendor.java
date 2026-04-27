@@ -35,13 +35,10 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 @EntityListeners(AuditingEntityListener.class)
-@Table(
-    name = "vendor",
-    indexes = {
+@Table(name = "vendor", indexes = {
         @Index(name = "idx_vendor_keycloak", columnList = "keycloak_id"),
-        @Index(name = "idx_vendor_status",   columnList = "status")
-    }
-)
+        @Index(name = "idx_vendor_status", columnList = "status")
+})
 public class Vendor {
 
     @Id
@@ -77,7 +74,8 @@ public class Vendor {
     private VendorStatus status = VendorStatus.PENDING;
 
     /**
-     * Set by admin when approving — points to the warehouse for this vendor's state.
+     * Set by admin when approving — points to the warehouse for this vendor's
+     * state.
      * Null while PENDING or REJECTED.
      */
     @ManyToOne(fetch = FetchType.LAZY)

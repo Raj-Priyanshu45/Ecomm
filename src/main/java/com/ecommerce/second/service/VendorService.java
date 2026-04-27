@@ -43,7 +43,6 @@ public class VendorService {
     // Warehouse management (ADMIN only)
     // ─────────────────────────────────────────────────────────────
 
-    @SuppressWarnings("null")
     public WarehouseResponse createWarehouse(CreateWarehouseRequest req) {
         if (warehouseRepo.existsByState(req.getState())) {
             throw new IllegalArgumentException(
@@ -79,7 +78,6 @@ public class VendorService {
             throw new IllegalArgumentException("You have already submitted a vendor application");
         }
        
-        @SuppressWarnings("null")
         Vendor vendor = vendorRepo.save(Vendor.builder()
                 .keycloakId(keycloakId)
                 .email(req.getEmail())

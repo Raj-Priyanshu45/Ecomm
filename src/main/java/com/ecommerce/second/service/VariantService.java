@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.ecommerce.second.dto.requestDTO.VarientRequest;
 import com.ecommerce.second.dto.responseDTO.FileUploadResponse;
+import com.ecommerce.second.dto.responseDTO.VariantDetailResponse;
 import com.ecommerce.second.dto.responseDTO.VariantResponse;
 import com.ecommerce.second.exceptionHandling.AccessDeniedException;
 import com.ecommerce.second.exceptionHandling.ImageNotFoundException;
@@ -119,7 +120,6 @@ public class VariantService {
 
     // ─────────────────────────────────────────────────────────────
 
-    @SuppressWarnings("null")
     public void addVariant(VarientRequest request, int productId,
             Authentication authentication, MultipartFile[] files, int primaryImageIndex) throws IOException {
 
@@ -372,5 +372,41 @@ public class VariantService {
             savedUrls.add(imageUrl.getUrl());
         }
         return savedUrls;
+    }
+
+    public VariantDetailResponse getVariantDetail(int productId , String variantString) {
+
+        VariantAttribute attr = variantAttrRepo.findByProduct_IdAndValueIgnoreCase(productId, variantString)
+                .orElseThrow(() -> new EntityNotFoundException("Variant not found for productId=" + productId + " and value=" + variantString));
+
+        ProductVariant variant = productVariantsRepo.findBySkuCode(attr.getSkuCode())
+                .orElseThrow(() -> new EntityNotFoundException("Variant not found for SKU: " + attr.getSkuCode()));
+
+        Inventory inventory = inventoryRepo.findBySkuCode(variant.getSkuCode())
+                .orElseThrow(() -> new EntityNotFoundException("Inventory not found for SKU: " + variant.getSkuCode()));
+
+        VariantDetailResponse response = new VariantDetailResponse(
+            variant.getId(),
+            variant.getSkuCode(),
+            attr.getName(),
+            attr.getValue(),
+            variant.getPrice(),
+            inventory.getAvailable() > 0,
+            getImageUrls(variant.getId()),
+            getPrimaryImageUrl(variant.getId())
+        );
+        return response;
+    }
+
+    private String getPrimaryImageUrl(int variantId) {
+        return varImageRepo.findByVarientIdAndPrimaryImageTrue(variantId)
+                .map(VarientImage::getImageUrl)
+                .orElse(null);
+    }
+
+    private List<String> getImageUrls(int variantId) {
+        return varImageRepo.findByVarientId(variantId).stream()
+                .map(VarientImage::getImageUrl)
+                .toList();
     }
 }

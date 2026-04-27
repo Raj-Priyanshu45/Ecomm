@@ -5,5 +5,6 @@ public enum Role {
     SELLER ,
     CUSTOMER ,
     SUPPORT , 
-    VENDOR
+    VENDOR , 
+    WAREHOUSE_MEMBER
 }

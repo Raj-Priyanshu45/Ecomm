@@ -1,7 +1,7 @@
 package com.ecommerce.second.repo;
 
 import java.util.List;
-
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -22,4 +22,6 @@ public interface VarientAttrRepo extends JpaRepository<VariantAttribute, Integer
 
     /** Attributes matching a specific SKU code */
     List<VariantAttribute> findBySkuCode(String skuCode);
+
+    Optional<VariantAttribute> findByProduct_IdAndValueIgnoreCase(int productId, String value);
 }

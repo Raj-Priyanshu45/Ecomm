@@ -1,7 +1,7 @@
 package com.ecommerce.second.repo;
 
 import java.util.List;
-
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -12,4 +12,6 @@ public interface ProductVarientsRepo extends JpaRepository<ProductVariant, Integ
 
     /** All variants for a given product — used for inStock calculation */
     List<ProductVariant> findByProductId(int productId);
+
+    Optional<ProductVariant> findBySkuCode(String skuCode);
 }

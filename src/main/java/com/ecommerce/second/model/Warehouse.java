@@ -54,10 +54,15 @@ public class Warehouse {
 
     private String contactPhone;
 
-    /** Soft capacity limit (number of SKU units). 0 = unlimited. */
     @Builder.Default
     private int capacityLimit = 0;
 
     @Builder.Default
     private boolean active = true;
+
+    @Column(name = "member_id" , nullable=false)
+    private String memberKeycloakId;
+
+    @Column(nullable=false)
+    private String memberEmail;
 }

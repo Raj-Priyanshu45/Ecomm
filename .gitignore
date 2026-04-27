@@ -35,3 +35,37 @@ volume-dat/
 application.properties
 .env
 
+# Text files
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+*~
+*.txt
+*.backup
+
+# Binary files
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.pdf
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+*.exe
+*.dll
+*.so
+*.dylib
+*.o
+*.class
+*.jar
+*.war
+*.ear
+
+# Zone Identifier files (Windows)
+*:Zone.Identifier
+

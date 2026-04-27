@@ -6,9 +6,13 @@ import com.ecommerce.second.dto.responseDTO.SingleProductResponse;
 import com.ecommerce.second.dto.responseDTO.VariantResponse;
 import com.ecommerce.second.service.ProductBrowseService;
 import com.ecommerce.second.service.VariantService;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import com.ecommerce.second.dto.responseDTO.VariantDetailResponse;
 
 /**
  * ──────────────────────────────────────────────────────────────────────────────
@@ -66,6 +70,14 @@ public class ProductBrowseController {
             @RequestParam(defaultValue = "20") int size) {
         return ResponseEntity.ok(productBrowseService.listByTag(slug, page, size));
     }
+
+    @GetMapping("{productId}/variants")
+    public ResponseEntity<VariantDetailResponse> getVariantDetail(
+            @PathVariable int productId,
+            @RequestParam String variantString) {
+        return ResponseEntity.ok(variantService.getVariantDetail(productId, variantString));
+    }
+
 
     /**
      * GET /api/browse/products/search?q=iphone&page=0&size=20

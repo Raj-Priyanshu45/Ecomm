@@ -4,7 +4,7 @@ public enum OrderStatus {
 
     // ── Customer journey ──────────────────────────────────────────
     PLACED,             // customer placed the order, payment pending / COD
-    DELIVERED,  // payment received (online) or COD accepted
+    DELIVERED,  // payment received COD accepted
 
     CONFIRMED,          // vendor confirmed the order
     PACKED,             // item packed, ready to hand off to courier
